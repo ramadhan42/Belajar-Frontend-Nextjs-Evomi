@@ -17,7 +17,6 @@ const fadeInUp = {
     }
 };
 
-// 
 const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -26,21 +25,19 @@ const staggerContainer = {
     }
 };
 
-// --- Font Configuration ---
+// --- Font Configuration[cite: 9] ---
 const fontJudul = localFont({
     src: "../fonts/8 Heavy.ttf",
     variable: "--font-brand",
     display: "swap",
 });
 
-// Font untuk caption
 const fontCaption = localFont({
     src: "../fonts/Nohemi-Regular.otf",
     variable: "--font-body",
     display: "swap",
 });
 
-// Interface untuk item keranjang
 interface CartItem {
     product_id: string;
     name: string;
@@ -50,7 +47,6 @@ interface CartItem {
     image: string;
 }
 
-// Interface untuk profil user
 interface UserProfile {
     name: string;
     email: string;
@@ -58,7 +54,6 @@ interface UserProfile {
     address?: string;
 }
 
-// Component utama
 export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [shippingAddress, setShippingAddress] = useState("");
@@ -70,7 +65,6 @@ export default function CheckoutPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
 
-    // Fungsi untuk mengambil data
     const fetchData = async () => {
         const token = localStorage.getItem("access_token");
         if (!token) {
@@ -104,18 +98,15 @@ export default function CheckoutPage() {
         }
     };
 
-    // Effect untuk mengambil data saat component dimount
     useEffect(() => {
-        fetchData();    
+        fetchData();
     }, []);
 
-    // handle checkout ada ongkos kirim
     const handleCheckout = async () => {
         const token = localStorage.getItem("access_token");
         if (!token) return alert("Silakan login terlebih dahulu");
         if (!shippingAddress) return alert("Mohon isi alamat pengiriman");
 
-        // Set state untuk menampilkan loading
         setIsSubmitting(true);
         const orderData = {
             total_harga: subtotal + 100,
@@ -127,7 +118,7 @@ export default function CheckoutPage() {
         };
 
         try {
-            const response = await fetch(`https://ramadhan.alwaysdata.net/api/orders/checkout`, { // Endpoint untuk checkout
+            const response = await fetch(`https://ramadhan.alwaysdata.net/api/orders/checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -152,43 +143,43 @@ export default function CheckoutPage() {
     };
 
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const shipping = 100; //<<== ongkos kirim
+    const shipping = 100;
     const total = subtotal + shipping;
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9] text-stone-400 text-[10px] uppercase tracking-[0.3em] animate-pulse">
+        <div className="min-h-screen flex items-center justify-center bg-[#0071bc] text-white text-[10px] uppercase tracking-[0.3em] animate-pulse">
             Finalizing Essence...
         </div>
     );
 
     return (
-        <div className={`${fontJudul.variable} ${fontCaption.variable} font-body min-h-screen bg-[#FBFBF9] text-stone-900 selection:bg-amber-100`}>
+        <div className={`${fontJudul.variable} ${fontCaption.variable} font-body min-h-screen bg-[#0071bc] text-white selection:bg-white/20`}>
 
-            {/* SUCCESS MODAL */}
+            {/* SUCCESS MODAL[cite: 9] */}
             <AnimatePresence>
                 {showSuccessModal && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-stone-900/20 backdrop-blur-md"
+                            className="absolute inset-0 bg-[#002d4b]/60 backdrop-blur-md"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative bg-white w-full max-w-md rounded-[3rem] p-12 shadow-2xl border border-stone-100 text-center"
+                            className="relative bg-white w-full max-w-md rounded-[3rem] p-12 shadow-2xl border border-blue-100 text-center"
                         >
                             <motion.div
                                 initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}
-                                className="w-20 h-20 bg-stone-900 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl"
+                                className="w-20 h-20 bg-[#0071bc] rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl"
                             >
                                 <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                             </motion.div>
-                            <h2 className={`${fontJudul.className} text-3xl uppercase tracking-tighter mb-3`}>Order Secured</h2>
-                            <p className="text-stone-500 text-xs mb-10 font-light leading-relaxed">
-                                Pesanan <span className="font-bold text-stone-800">#{orderId || "EV-99"}</span> sedang diproses.
+                            <h2 className={`${fontJudul.className} text-3xl uppercase tracking-tighter mb-3 text-[#0071bc]`}>Order Secured</h2>
+                            <p className="text-slate-500 text-xs mb-10 font-light leading-relaxed">
+                                Pesanan <span className="font-bold text-[#0071bc]">#{orderId || "EV-99"}</span> sedang diproses.
                             </p>
-                            <button onClick={() => window.location.href = '/profile'} className="w-full bg-stone-900 text-white py-5 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-stone-800 transition-all shadow-lg">
+                            <button onClick={() => window.location.href = '/profile'} className="w-full bg-[#0071bc] text-white py-5 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-blue-800 transition-all shadow-lg">
                                 Back to Collection
                             </button>
                         </motion.div>
@@ -196,7 +187,8 @@ export default function CheckoutPage() {
                 )}
             </AnimatePresence>
 
-            <nav className="fixed w-full z-[100] bg-stone-900/90 backdrop-blur-xl border-b border-white/5 h-20 flex items-center justify-between px-8">
+            {/* NAVBAR[cite: 9] */}
+            <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 h-20 flex items-center justify-between px-8">
                 <Link href="/profile" className="text-white/60 hover:text-white transition-colors">
                     <ArrowLeft size={20} />
                 </Link>
@@ -204,7 +196,6 @@ export default function CheckoutPage() {
                 <div className="w-5" />
             </nav>
 
-            {/* Main content */}
             <motion.main
                 initial="hidden"
                 animate="visible"
@@ -213,93 +204,93 @@ export default function CheckoutPage() {
             >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
-                    {/* LEFT: SHIPPING FORM */}
+                    {/* LEFT: SHIPPING FORM[cite: 9] */}
                     <div className="lg:col-span-7 space-y-12">
                         <section>
                             <div className="flex items-center space-x-3 mb-10">
-                                <div className="w-8 h-[1px] bg-stone-300"></div>
-                                <h2 className="text-[10px] uppercase tracking-[0.3em] font-bold text-stone-400">Checkout Identity</h2>
+                                <div className="w-8 h-[1px] bg-white/30"></div>
+                                <h2 className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/60">Checkout Identity</h2>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                                 <div className="space-y-2">
-                                    <label className="text-[8px] uppercase text-stone-400 font-bold tracking-widest ml-1">Full Name</label>
-                                    <input type="text" readOnly defaultValue={user?.name || ''} className="w-full bg-white border border-stone-100 rounded-xl px-5 py-4 text-xs outline-none text-stone-500 cursor-not-allowed" />
+                                    <label className="text-[8px] uppercase text-white/60 font-bold tracking-widest ml-1">Full Name</label>
+                                    <input type="text" readOnly defaultValue={user?.name || ''} className="w-full bg-white border border-blue-50 rounded-xl px-5 py-4 text-xs outline-none text-[#0071bc] cursor-not-allowed opacity-90" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[8px] uppercase text-stone-400 font-bold tracking-widest ml-1">Phone Number</label>
-                                    <input type="text" defaultValue={user?.phone || ''} className="w-full bg-stone-50 border border-stone-100 rounded-xl px-5 py-4 text-xs focus:ring-1 focus:ring-stone-200 outline-none transition-all" />
+                                    <label className="text-[8px] uppercase text-white/60 font-bold tracking-widest ml-1">Phone Number</label>
+                                    <input type="text" defaultValue={user?.phone || ''} className="w-full bg-white border border-blue-50 rounded-xl px-5 py-4 text-xs focus:ring-4 focus:ring-blue-100 outline-none text-[#0071bc] transition-all" />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[8px] uppercase text-stone-400 font-bold tracking-widest ml-1">Shipping Address</label>
+                                    <label className="text-[8px] uppercase text-white/60 font-bold tracking-widest ml-1">Shipping Address</label>
                                     <textarea
                                         rows={3}
                                         value={shippingAddress}
                                         onChange={(e) => setShippingAddress(e.target.value)}
                                         placeholder="Full address for delivery..."
-                                        className="w-full bg-stone-50 border border-stone-100 rounded-2xl px-5 py-4 text-xs focus:ring-1 focus:ring-stone-200 outline-none transition-all resize-none"
+                                        className="w-full bg-white border border-blue-50 rounded-2xl px-5 py-4 text-xs focus:ring-4 focus:ring-blue-100 outline-none text-[#0071bc] transition-all resize-none"
                                     />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[8px] uppercase text-stone-400 font-bold tracking-widest ml-1">Notes (Optional)</label>
+                                    <label className="text-[8px] uppercase text-white/60 font-bold tracking-widest ml-1">Notes (Optional)</label>
                                     <input
                                         type="text"
                                         value={catatan}
                                         onChange={(e) => setCatatan(e.target.value)}
                                         placeholder="Specific instructions..."
-                                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-5 py-4 text-xs focus:ring-1 focus:ring-stone-200 outline-none transition-all"
+                                        className="w-full bg-white border border-blue-50 rounded-xl px-5 py-4 text-xs focus:ring-4 focus:ring-blue-100 outline-none text-[#0071bc] transition-all"
                                     />
                                 </div>
                             </div>
                         </section>
 
-                        <div className="p-6 bg-amber-50/50 rounded-2xl border border-amber-100 flex items-start space-x-4">
-                            <ShieldCheck size={20} className="text-amber-800 shrink-0" />
-                            <p className="text-[10px] text-amber-900/70 leading-relaxed font-medium uppercase tracking-wider">
+                        <div className="p-6 bg-white/10 rounded-2xl border border-white/20 flex items-start space-x-4">
+                            <ShieldCheck size={20} className="text-white shrink-0" />
+                            <p className="text-[10px] text-white/70 leading-relaxed font-medium uppercase tracking-wider">
                                 Payment via Cash on Delivery (COD). Please ensure the correct amount is ready upon arrival.
                             </p>
                         </div>
                     </div>
 
-                    {/* RIGHT: ORDER SUMMARY - Glassmorphism Card */}
+                    {/* RIGHT: ORDER SUMMARY[cite: 9] */}
                     <div className="lg:col-span-5">
-                        <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-stone-100 sticky top-32">
-                            <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest text-stone-800 mb-8 border-b border-stone-50 pb-6`}>Summary</h3>
+                        <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-blue-900/40 border border-blue-50 sticky top-32">
+                            <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest text-[#0071bc] mb-8 border-b border-blue-50 pb-6`}>Summary</h3>
 
                             <div className="space-y-6 mb-10 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
                                 {cartItems.map((item) => (
                                     <div key={item.product_id} className="flex gap-4 items-center">
-                                        <div className="relative w-14 h-16 bg-stone-100 rounded-xl overflow-hidden border border-stone-50">
+                                        <div className="relative w-14 h-16 bg-blue-50 rounded-xl overflow-hidden border border-blue-50">
                                             <Image src={item.image_url} alt={item.name} fill className="object-cover" />
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="text-[10px] uppercase font-bold tracking-tight text-stone-800">{item.name}</h4>
-                                            <p className="text-[9px] text-stone-400 uppercase tracking-widest mt-1">Qty: {item.quantity}</p>
+                                            <h4 className="text-[10px] uppercase font-bold tracking-tight text-[#0071bc]">{item.name}</h4>
+                                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Qty: {item.quantity}</p>
                                         </div>
-                                        <span className="text-[11px] font-medium text-stone-600">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                                        <span className="text-[11px] font-medium text-[#0071bc]">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="space-y-4 pt-6 border-t border-stone-100 mb-10">
-                                <div className="flex justify-between text-[10px] text-stone-400 uppercase tracking-[0.2em]">
+                            <div className="space-y-4 pt-6 border-t border-blue-50 mb-10">
+                                <div className="flex justify-between text-[10px] text-slate-400 uppercase tracking-[0.2em]">
                                     <span>Subtotal</span>
-                                    <span className="text-stone-600">Rp {subtotal.toLocaleString('id-ID')}</span>
+                                    <span className="text-[#0071bc]">Rp {subtotal.toLocaleString('id-ID')}</span>
                                 </div>
-                                <div className="flex justify-between text-[10px] text-stone-400 uppercase tracking-[0.2em]">
+                                <div className="flex justify-between text-[10px] text-slate-400 uppercase tracking-[0.2em]">
                                     <span>Shipping</span>
-                                    <span className="text-stone-600">Rp {shipping.toLocaleString('id-ID')}</span>
+                                    <span className="text-[#0071bc]">Rp {shipping.toLocaleString('id-ID')}</span>
                                 </div>
                                 <div className="flex justify-between items-end pt-4">
-                                    <span className={`${fontJudul.className} text-xs uppercase tracking-widest`}>Total Amount</span>
-                                    <span className={`${fontJudul.className} text-xl text-stone-900`}>Rp {total.toLocaleString('id-ID')}</span>
+                                    <span className={`${fontJudul.className} text-xs uppercase tracking-widest text-[#0071bc]`}>Total Amount</span>
+                                    <span className={`${fontJudul.className} text-xl text-[#0071bc]`}>Rp {total.toLocaleString('id-ID')}</span>
                                 </div>
                             </div>
 
                             <button
-                                onClick={handleCheckout}  // Fungsi untuk menangani checkout
+                                onClick={handleCheckout}
                                 disabled={isSubmitting}
-                                className={`w-full bg-stone-900 text-white py-5 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-stone-800 transition-all active:scale-[0.98] shadow-xl shadow-stone-100 group ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`w-full bg-[#0071bc] text-white py-5 rounded-2xl flex flex-col items-center justify-center gap-1 hover:bg-blue-800 transition-all active:scale-[0.98] shadow-xl shadow-blue-100 group ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 <span className="text-[10px] uppercase tracking-[0.3em] font-bold">
                                     {isSubmitting ? "Finalizing..." : "Complete Purchase"}

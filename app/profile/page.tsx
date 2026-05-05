@@ -18,7 +18,6 @@ const fadeInUp: Variants = {
   }
 };
 
-// TODO: Add discount logic here
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -36,39 +35,36 @@ const fontJudul = localFont({
   display: "swap",
 });
 
-// TODO: Add discount logic here
 const fontCaption = localFont({
   src: "../fonts/Nohemi-Regular.otf",
   variable: "--font-body",
   display: "swap",
 });
 
-// TODO: Add discount logic here
 export default function LuxuryProfilePage() {
   const [formData, setFormData] = useState({
-    id: '', // id user
-    name: '', // name user
-    username: '', // username user
-    email: '', // email user
-    current_password: '', // current password user
-    new_password: '', // new password user
-    new_password_confirmation: '', // new password confirmation user
+    id: '', 
+    name: '', 
+    username: '', 
+    email: '', 
+    current_password: '', 
+    new_password: '', 
+    new_password_confirmation: '', 
     image: null as File | null,
   });
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);  // TODO: Add discount logic here
-  const [isModalOpen, setIsModalOpen] = useState(false);  // TODO: Add discount logic here
-  const [loading, setLoading] = useState(false);  // TODO: Add discount logic here
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | null, text: string }>({ type: null, text: "" });  // TODO: Add discount logic here
-  const [user, setUser] = useState<{ id: string; name: string; username: string; email: string; image?: string; } | null>(null);  // TODO: Add discount logic here
-  const [activeTab, setActiveTab] = useState("cart");  // TODO: Add discount logic here
-  const [mounted, setMounted] = useState(false);  // TODO: Add discount logic here
-  const router = useRouter();  // TODO: Add discount logic here
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | null, text: string }>({ type: null, text: "" });
+  const [user, setUser] = useState<{ id: string; name: string; username: string; email: string; image?: string; } | null>(null);
+  const [activeTab, setActiveTab] = useState("cart");
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
-  useEffect(() => { // TODO: Add discount logic here
+  useEffect(() => {
     setMounted(true);
 
-    // TODO: Add discount logic here
     const fetchUserData = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -77,7 +73,6 @@ export default function LuxuryProfilePage() {
       }
 
       try {
-        // TODO: Add discount logic here
         const response = await fetch("https://ramadhan.alwaysdata.net/api/user", {
           method: "GET",
           headers: {
@@ -108,14 +103,13 @@ export default function LuxuryProfilePage() {
     fetchUserData();
   }, [router]);
 
-  const handleLogout = () => { // TODO: Add discount logic here
+  const handleLogout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user_data");
     router.push("/");
     router.refresh();
   };
 
-  // TODO: Add discount logic here
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -124,14 +118,14 @@ export default function LuxuryProfilePage() {
     }
   };
 
-  const closeModal = () => { // TODO: Add discount logic here
+  const closeModal = () => {
     setIsModalOpen(false);
     setFormData(prev => ({ ...prev, current_password: '', new_password: '', new_password_confirmation: '', image: null }));
     setImagePreview(null);
     setStatusMessage({ type: null, text: "" });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => { // TODO: Add discount logic here
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const token = localStorage.getItem("access_token");
@@ -171,11 +165,11 @@ export default function LuxuryProfilePage() {
   };
 
   if (!mounted || !user) return (
-    <div className="min-h-screen bg-[#FBFBF9] flex items-center justify-center">
+    <div className="min-h-screen bg-[#0071bc] flex items-center justify-center">
       <motion.div
         animate={{ opacity: [0.3, 1, 0.3] }}
         transition={{ duration: 2, repeat: Infinity }}
-        className="text-[10px] uppercase tracking-[0.5em] text-stone-400 font-bold"
+        className="text-[10px] uppercase tracking-[0.5em] text-white/70 font-bold"
       >
         Loading Profile...
       </motion.div>
@@ -183,29 +177,29 @@ export default function LuxuryProfilePage() {
   );
 
   return (
-    <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#FBFBF9] font-sans text-stone-900 selection:bg-amber-200/50 antialiased`}>
+    <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#0071bc] font-sans text-white selection:bg-white/20 antialiased`}>
 
       {/* NAVBAR */}
-      <nav className="fixed w-full z-[100] bg-stone-900/90 backdrop-blur-xl border-b border-white/5 shadow-sm px-8 h-20 flex items-center justify-between">
+      <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 shadow-sm px-8 h-20 flex items-center justify-between">
         <Link href="/" className="hover:opacity-70 transition-opacity">
           <Image src="/img/Logo Evomi.png" alt="Evomi" width={80} height={30} className="brightness-0 invert" />
         </Link>
         <div className="flex items-center space-x-8">
-          <button onClick={handleLogout} className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 hover:text-amber-200 transition-colors">
+          <button onClick={handleLogout} className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors">
             Sign Out
           </button>
         </div>
       </nav>
 
-      {/* AMBIENT BACKGROUND */}
+      {/* AMBIENT BACKGROUND DECORATION */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 2 }}
-          className="absolute top-20 left-10 w-[30rem] h-[30rem] bg-stone-200/40 rounded-full blur-[100px]"
+          initial={{ opacity: 0 }} animate={{ opacity: 0.2 }} transition={{ duration: 2 }}
+          className="absolute top-20 left-10 w-[30rem] h-[30rem] bg-white/20 rounded-full blur-[120px]"
         ></motion.div>
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 0.4 }} transition={{ duration: 2, delay: 0.5 }}
-          className="absolute bottom-20 right-10 w-[30rem] h-[30rem] bg-amber-100/30 rounded-full blur-[100px]"
+          initial={{ opacity: 0 }} animate={{ opacity: 0.15 }} transition={{ duration: 2, delay: 0.5 }}
+          className="absolute bottom-20 right-10 w-[30rem] h-[30rem] bg-blue-300/20 rounded-full blur-[120px]"
         ></motion.div>
       </div>
 
@@ -220,11 +214,11 @@ export default function LuxuryProfilePage() {
             className="space-y-10 sticky top-36"
           >
             <motion.div variants={fadeInUp} className="relative group w-32 h-40">
-              <div className="w-full h-full bg-stone-100 rounded-[2.5rem] overflow-hidden border border-stone-200 shadow-sm transition-transform duration-700 group-hover:scale-[1.02]">
+              <div className="w-full h-full bg-white/10 rounded-[2.5rem] overflow-hidden border border-white/20 shadow-sm transition-transform duration-700 group-hover:scale-[1.02]">
                 {user.image && user.image !== 'default-avatar.png' ? (
                   <Image src={`https://ramadhan.alwaysdata.net/storage/profiles/${user.image}`} alt="Profile" fill className="object-cover" unoptimized />
                 ) : (
-                  <div className="absolute inset-0 bg-stone-800 flex items-center justify-center text-3xl text-white uppercase font-light">
+                  <div className="absolute inset-0 bg-white/20 flex items-center justify-center text-3xl text-white uppercase font-light">
                     {user.name.charAt(0)}
                   </div>
                 )}
@@ -232,11 +226,11 @@ export default function LuxuryProfilePage() {
             </motion.div>
 
             <motion.div variants={fadeInUp} className="space-y-2">
-              <h2 className={`${fontJudul.className} text-3xl uppercase tracking-tighter text-stone-900`}>{user.name}</h2>
-              <p className="text-stone-400 text-xs tracking-widest uppercase font-medium">@{user.username}</p>
+              <h2 className={`${fontJudul.className} text-3xl uppercase tracking-tighter text-white`}>{user.name}</h2>
+              <p className="text-white/60 text-xs tracking-widest uppercase font-medium">@{user.username}</p>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="h-[1px] bg-stone-200 w-12"></motion.div>
+            <motion.div variants={fadeInUp} className="h-[1px] bg-white/20 w-12"></motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col space-y-5">
               {[
@@ -246,7 +240,7 @@ export default function LuxuryProfilePage() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`text-left text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-500 ${activeTab === item.id ? "text-stone-900 translate-x-2" : "text-stone-300 hover:text-stone-500"
+                  className={`text-left text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-500 ${activeTab === item.id ? "text-white translate-x-2" : "text-white/40 hover:text-white/70"
                     }`}
                 >
                   {item.label}
@@ -265,16 +259,17 @@ export default function LuxuryProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-white rounded-[2.5rem] p-8 md:p-14 shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-stone-100 min-h-[550px]"
+              className="bg-white rounded-[2.5rem] p-8 md:p-14 shadow-2xl border border-white/10 min-h-[550px]"
             >
               {activeTab === "cart" ? (
                 <div className="space-y-8">
-                  <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest text-stone-800 border-b border-stone-50 pb-6`}>Current Bag</h3>
+                  <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest text-[#0071bc] border-b border-slate-100 pb-6`}>Current Bag</h3>
+                  {/* ShoppingBag component may need internal style adjustment */}
                   <ShoppingBag />
                 </div>
               ) : (
-                <div className="space-y-12">
-                  <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest text-stone-800`}>Identity Details</h3>
+                <div className="space-y-12 text-[#0071bc]">
+                  <h3 className={`${fontJudul.className} text-xl uppercase tracking-widest`}>Identity Details</h3>
                   <div className="grid md:grid-cols-2 gap-12">
                     <DetailItem label="Full Name" value={user.name} />
                     <DetailItem label="Email Address" value={user.email} />
@@ -284,7 +279,7 @@ export default function LuxuryProfilePage() {
                   <div className="pt-8">
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="bg-stone-900 text-white px-10 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 hover:-translate-y-1 transition-all shadow-lg shadow-stone-200"
+                      className="bg-[#0071bc] text-white px-10 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#005a96] hover:-translate-y-1 transition-all shadow-lg shadow-[#0071bc]/20"
                     >
                       Modify Identity
                     </button>
@@ -305,19 +300,19 @@ export default function LuxuryProfilePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeModal}
-              className="absolute inset-0 bg-stone-900/20 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#002d4b]/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative bg-white w-full max-w-xl rounded-[2.5rem] p-10 md:p-14 shadow-2xl overflow-hidden border border-stone-100"
+              className="relative bg-white w-full max-w-xl rounded-[2.5rem] p-10 md:p-14 shadow-2xl overflow-hidden"
             >
-              <div className="space-y-8">
+              <div className="space-y-8 text-[#0071bc]">
                 <div>
                   <h3 className={`${fontJudul.className} text-2xl uppercase tracking-tighter mb-1`}>Refine Identity</h3>
-                  <p className="text-[9px] text-stone-400 uppercase tracking-widest">Digital Presence Maintenance</p>
+                  <p className="text-[9px] text-slate-400 uppercase tracking-widest">Digital Presence Maintenance</p>
                 </div>
 
                 {statusMessage.text && (
@@ -333,14 +328,14 @@ export default function LuxuryProfilePage() {
                 <form className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar" onSubmit={handleSubmit}>
                   <div className="flex flex-col items-center space-y-4 pb-4">
                     <div className="relative group w-24 h-24">
-                      <div className="w-full h-full bg-stone-50 rounded-[1.5rem] overflow-hidden border-2 border-dashed border-stone-200 flex items-center justify-center transition-all group-hover:border-stone-400">
+                      <div className="w-full h-full bg-slate-50 rounded-[1.5rem] overflow-hidden border-2 border-dashed border-[#0071bc]/20 flex items-center justify-center transition-all group-hover:border-[#0071bc]">
                         {(imagePreview || (user.image && user.image !== 'default-avatar.png')) ? (
                           <img src={imagePreview || `https://ramadhan.alwaysdata.net/storage/profiles/${user.image}`} className="w-full h-full object-cover" alt="Preview" />
                         ) : (
-                          <span className="text-[8px] text-stone-300 font-bold uppercase tracking-widest">No Portrait</span>
+                          <span className="text-[8px] text-[#0071bc]/30 font-bold uppercase tracking-widest">No Portrait</span>
                         )}
                       </div>
-                      <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-stone-900/40 opacity-0 group-hover:opacity-100 rounded-[1.5rem] transition-all">
+                      <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-[#0071bc]/40 opacity-0 group-hover:opacity-100 rounded-[1.5rem] transition-all">
                         <span className="text-[8px] text-white font-black uppercase tracking-widest">Change</span>
                         <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
                       </label>
@@ -352,8 +347,8 @@ export default function LuxuryProfilePage() {
                     <InputGroup label="Username" value={formData.username} onChange={(v: string) => setFormData({ ...formData, username: v })} />
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t border-stone-100">
-                    <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest">Security Update</p>
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Security Update</p>
                     <InputGroup label="Current Password" type="password" value={formData.current_password} onChange={(v: string) => setFormData({ ...formData, current_password: v })} placeholder="••••••••" />
                     <div className="grid grid-cols-2 gap-4">
                       <InputGroup label="New Password" type="password" value={formData.new_password} onChange={(v: string) => setFormData({ ...formData, new_password: v })} placeholder="Secret" />
@@ -362,8 +357,8 @@ export default function LuxuryProfilePage() {
                   </div>
 
                   <div className="pt-6 flex gap-3">
-                    <button type="button" onClick={closeModal} className="flex-1 px-6 py-4 rounded-xl text-[9px] uppercase tracking-widest font-bold text-stone-400 hover:bg-stone-50 transition-all">Cancel</button>
-                    <button type="submit" disabled={loading} className="flex-[2] bg-stone-900 text-white px-6 py-4 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-stone-800 transition-all disabled:opacity-50">
+                    <button type="button" onClick={closeModal} className="flex-1 px-6 py-4 rounded-xl text-[9px] uppercase tracking-widest font-bold text-slate-400 hover:bg-slate-50 transition-all">Cancel</button>
+                    <button type="submit" disabled={loading} className="flex-[2] bg-[#0071bc] text-white px-6 py-4 rounded-xl text-[9px] uppercase tracking-widest font-bold hover:bg-[#005a96] transition-all disabled:opacity-50">
                       {loading ? "Refining..." : "Save Refinements"}
                     </button>
                   </div>
@@ -380,8 +375,8 @@ export default function LuxuryProfilePage() {
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-2">
-      <label className="text-[9px] uppercase tracking-[0.3em] font-bold text-stone-300">{label}</label>
-      <p className="text-base font-light text-stone-800 border-b border-stone-50 pb-2">{value}</p>
+      <label className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#0071bc]/40">{label}</label>
+      <p className="text-base font-light text-[#0071bc] border-b border-slate-50 pb-2">{value}</p>
     </div>
   );
 }
@@ -389,13 +384,13 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 function InputGroup({ label, value, onChange, type = "text", placeholder = "" }: any) {
   return (
     <div className="space-y-2">
-      <label className="text-[8px] uppercase tracking-[0.3em] font-bold text-stone-400 ml-1">{label}</label>
+      <label className="text-[8px] uppercase tracking-[0.3em] font-bold text-[#0071bc]/60 ml-1">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-stone-50 border-none rounded-xl px-5 py-3.5 text-xs focus:ring-1 focus:ring-stone-200 outline-none transition-all placeholder:text-stone-300"
+        className="w-full bg-slate-50 border border-slate-100 rounded-xl px-5 py-3.5 text-xs text-[#0071bc] focus:ring-1 focus:ring-[#0071bc]/20 outline-none transition-all placeholder:text-[#0071bc]/30"
       />
     </div>
   );

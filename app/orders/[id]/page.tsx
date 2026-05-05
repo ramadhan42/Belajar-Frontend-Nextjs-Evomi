@@ -8,21 +8,19 @@ import localFont from "next/font/local";
 import { ArrowLeft, Package, Truck, MessageSquare, ShieldCheck, X, QrCode, Banknote, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Font Configuration ---
+// --- Font Configuration[cite: 7] ---
 const fontJudul = localFont({
     src: "../../fonts/8 Heavy.ttf",
     variable: "--font-brand",
     display: "swap",
 });
 
-// Font untuk caption
 const fontCaption = localFont({
     src: "../../fonts/Nohemi-Regular.otf",
     variable: "--font-body",
     display: "swap",
 });
 
-// Component utama
 export default function OrderDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -30,14 +28,12 @@ export default function OrderDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isPaying, setIsPaying] = useState(false);
 
-    // State untuk Modal & QRIS
+    // State untuk Modal & QRIS[cite: 7]
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<"cash" | "qris" | null>(null);
     const [qrisData, setQrisData] = useState<any>(null);
-
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-    // useEffect Fungsi Pertama
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         if (!token) {
@@ -45,7 +41,6 @@ export default function OrderDetailPage() {
             return;
         }
 
-        // Fungsi untuk mengambil detail order
         const fetchOrderDetail = async () => {
             try {
                 const response = await fetch(`https://ramadhan.alwaysdata.net/api/orders/${params.id}`, {
@@ -65,50 +60,38 @@ export default function OrderDetailPage() {
             }
         };
 
-        if (params.id) fetchOrderDetail();  // Memanggil fungsi untuk mengambil detail order
+        if (params.id) fetchOrderDetail();
     }, [params.id, router]);
 
-    // useEffect Fungsi ke 2, Modifikasi useEffect polling status
+    // Polling status pembayaran[cite: 7]
     useEffect(() => {
         let interval: NodeJS.Timeout;
-
-        // Polling HANYA aktif jika loading utama sudah selesai, QRIS sudah muncul, dan modal terbuka
         if (!loading && qrisData && isModalOpen) {
             interval = setInterval(async () => {
                 try {
                     const orderId = qrisData.order_id;
-
-                    // Gunakan backend Anda sebagai proxy untuk menghindari CORS
                     const response = await fetch(`https://ramadhan.alwaysdata.net/api/midtrans/status/${orderId}`, {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
                             'Accept': 'application/json'
                         }
                     });
-
                     const result = await response.json();
-
-                    // Cek status dari response Midtrans yang diteruskan backend
                     if (result.transaction_status === 'settlement' || result.transaction_status === 'capture') {
                         setOrder((prev: any) => ({ ...prev, status_pembayaran: "success" }));
-
-                        await updatePaymentStatusToSuccess();   // Memanggil fungsi untuk update status pembayaran
-                        setIsModalOpen(false);  // Menutup modal
-                        setIsSuccessModalOpen(true);    // Menampilkan modal success
-                        clearInterval(interval);    // Menghentikan polling
+                        await updatePaymentStatusToSuccess();
+                        setIsModalOpen(false);
+                        setIsSuccessModalOpen(true);
+                        clearInterval(interval);
                     }
                 } catch (error) {
                     console.error("Polling error:", error);
                 }
             }, 3000);
         }
-
-        return () => {
-            if (interval) clearInterval(interval);
-        };
+        return () => { if (interval) clearInterval(interval); };
     }, [loading, qrisData, isModalOpen]);
 
-    // Fungsi helper untuk update backend
     const updatePaymentStatusToSuccess = async () => {
         const token = localStorage.getItem("access_token");
         await fetch(`https://ramadhan.alwaysdata.net/api/orders/${params.id}`, {
@@ -122,11 +105,9 @@ export default function OrderDetailPage() {
         setOrder((prev: any) => ({ ...prev, status_pembayaran: "success" }));
     };
 
-    // FUNGSI PEMBAYARAN CASH (Update Status ke Backend)
     const handleCashPayment = async () => {
         const token = localStorage.getItem("access_token");
         if (!token) return;
-
         setIsPaying(true);
         try {
             const response = await fetch(`https://ramadhan.alwaysdata.net/api/orders/${params.id}`, {
@@ -138,14 +119,11 @@ export default function OrderDetailPage() {
                 },
                 body: JSON.stringify({ status_pembayaran: "success" }),
             });
-
             const result = await response.json();
             if (result.success || result.status === "success") {
                 setOrder((prevOrder: any) => ({ ...prevOrder, status_pembayaran: "success" }));
                 setIsModalOpen(false);
-                alert("Pembayaran Cash Berhasil Terverifikasi!");
-            } else {
-                alert("Gagal memproses pembayaran: " + (result.message || "Unknown error"));
+                setIsSuccessModalOpen(true);
             }
         } catch (error) {
             alert("Terjadi kesalahan pada server.");
@@ -154,24 +132,16 @@ export default function OrderDetailPage() {
         }
     };
 
-    // FUNGSI TEMBAK API MIDTRANS QRIS
-    // Ubah bagian fetch di dalam handleQrisPayment
     const handleQrisPayment = async () => {
         setIsPaying(true);
         setPaymentMethod("qris");
-
-        // 1. Hitung ulang total berdasarkan item agar PASTI SAMA
-        const items = order.details.map((item: { product: { id: any; nama: string; }; harga_saat_beli: any; jumlah: any; }) => ({
+        const items = order.details.map((item: any) => ({
             id: String(item.product.id).substring(0, 50),
             price: Math.round(Number(item.harga_saat_beli)),
             quantity: Number(item.jumlah),
             name: item.product.nama.substring(0, 50)
         }));
-
-        // 2. Hitung total dari item (price * quantity)
-        const itemsTotal = items.reduce((sum: number, item: { price: number; quantity: number; }) => sum + (item.price * item.quantity), 0);
-
-        // 3. Tambahkan ongkir (asumsikan ongkir adalah komponen tambahan)
+        const itemsTotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
         const shippingCost = Math.round(Number(order.ongkos_kirim));
         const grossAmount = itemsTotal + shippingCost;
 
@@ -183,38 +153,16 @@ export default function OrderDetailPage() {
                     payment_type: "qris",
                     transaction_details: {
                         order_id: `EVOMI-${order.id}-${Date.now()}`,
-                        gross_amount: grossAmount // Harus sama dengan total di bawah
+                        gross_amount: grossAmount
                     },
-                    item_details: [
-                        ...items,
-                        {
-                            id: "ONGKIR",
-                            price: shippingCost,
-                            quantity: 1,
-                            name: "Ongkos Kirim"
-                        }
-                    ],
-                    customer_details: {
-                        first_name: "Customer",
-                        last_name: "Evomi",
-                        email: "customer@example.com",
-                    },
+                    item_details: [...items, { id: "ONGKIR", price: shippingCost, quantity: 1, name: "Ongkos Kirim" }],
+                    customer_details: { first_name: "Customer", last_name: "Evomi", email: "customer@example.com" },
                     qris: { acquirer: "gopay" }
                 })
             });
-
-            // ... sisa logic penanganan response tetap sama
-            // Cek jika ada error validation dari Midtrans
             const result = await response.json();
-
-            // Cek jika ada error validation dari Midtrans
             if (result.status_code === "201") {
                 setQrisData(result);
-            } else if (result.validation_messages) {
-                // Ini akan memunculkan pesan error spesifik dari Midtrans
-                alert(`Validation Error: ${result.validation_messages.join(", ")}`);
-            } else {
-                alert(`Gagal: ${result.status_message || "Terjadi kesalahan sistem"}`);
             }
         } catch (error) {
             console.error("Error:", error);
@@ -224,7 +172,7 @@ export default function OrderDetailPage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9] text-stone-400 text-[10px] uppercase tracking-[0.3em] animate-pulse">
+        <div className="min-h-screen flex items-center justify-center bg-[#0071bc] text-white text-[10px] uppercase tracking-[0.3em] animate-pulse">
             Retrieving Order Details...
         </div>
     );
@@ -232,28 +180,28 @@ export default function OrderDetailPage() {
     if (!order) return null;
 
     return (
-        <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#FBFBF9] font-sans antialiased text-stone-900 selection:bg-amber-100`}>
+        <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#0071bc] font-sans antialiased text-white selection:bg-white/20`}>
 
-            {/* MODAL SUKSES */}
+            {/* MODAL SUKSES[cite: 7] */}
             <AnimatePresence>
                 {isSuccessModalOpen && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-[#002d4b]/60 backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                             className="bg-white p-10 rounded-[2.5rem] text-center max-w-sm w-full relative z-10"
                         >
-                            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <ShieldCheck size={40} className="text-emerald-600" />
+                            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShieldCheck size={40} className="text-[#0071bc]" />
                             </div>
-                            <h3 className={`${fontJudul.className} text-2xl uppercase mb-2`}>Payment Confirmed</h3>
-                            <p className="text-stone-400 text-sm mb-8">Terima kasih, pembayaran pesanan Anda telah berhasil diverifikasi.</p>
+                            <h3 className={`${fontJudul.className} text-2xl uppercase mb-2 text-[#0071bc]`}>Payment Confirmed</h3>
+                            <p className="text-slate-400 text-sm mb-8">Terima kasih, pembayaran pesanan Anda telah berhasil diverifikasi.</p>
                             <button
                                 onClick={() => setIsSuccessModalOpen(false)}
-                                className="w-full py-4 bg-stone-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest"
+                                className="w-full py-4 bg-[#0071bc] text-white rounded-2xl text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-blue-100"
                             >
                                 Close
                             </button>
@@ -262,14 +210,14 @@ export default function OrderDetailPage() {
                 )}
             </AnimatePresence>
 
-            {/* --- MODAL PEMBAYARAN --- */}
+            {/* MODAL PEMBAYARAN[cite: 7] */}
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => { if (!isPaying) setIsModalOpen(false); }}
-                            className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-[#002d4b]/60 backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -277,9 +225,9 @@ export default function OrderDetailPage() {
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10"
                         >
-                            <div className="p-8 border-b border-stone-100 flex justify-between items-center">
-                                <h3 className={`${fontJudul.className} text-xl uppercase tracking-tighter`}>Select Method</h3>
-                                <button onClick={() => setIsModalOpen(false)} className="text-stone-400 hover:text-stone-900 transition-colors">
+                            <div className="p-8 border-b border-blue-50 flex justify-between items-center">
+                                <h3 className={`${fontJudul.className} text-xl uppercase tracking-tighter text-[#0071bc]`}>Select Method</h3>
+                                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-[#0071bc] transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -287,52 +235,44 @@ export default function OrderDetailPage() {
                             <div className="p-8 space-y-4">
                                 {!qrisData ? (
                                     <>
-                                        {/* Opsi Cash */}
                                         <button
                                             onClick={handleCashPayment}
                                             disabled={isPaying}
-                                            className="w-full flex items-center p-6 rounded-3xl border border-stone-100 hover:border-amber-200 hover:bg-amber-50 transition-all group"
+                                            className="w-full flex items-center p-6 rounded-3xl border border-blue-50 hover:border-blue-100 hover:bg-blue-50 transition-all group"
                                         >
-                                            <div className="w-12 h-12 bg-stone-900 rounded-2xl flex items-center justify-center text-white mr-4">
+                                            <div className="w-12 h-12 bg-[#0071bc] rounded-2xl flex items-center justify-center text-white mr-4">
                                                 <Banknote size={20} />
                                             </div>
                                             <div className="text-left">
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Pay via</p>
-                                                <p className={`${fontJudul.className} text-lg uppercase`}>Cash on Delivery</p>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pay via</p>
+                                                <p className={`${fontJudul.className} text-lg uppercase text-[#0071bc]`}>Cash on Delivery</p>
                                             </div>
                                         </button>
 
-                                        {/* Opsi QRIS */}
                                         <button
                                             onClick={handleQrisPayment}
                                             disabled={isPaying}
-                                            className="w-full flex items-center p-6 rounded-3xl border border-stone-100 hover:border-amber-200 hover:bg-amber-50 transition-all group"
+                                            className="w-full flex items-center p-6 rounded-3xl border border-blue-50 hover:border-blue-100 hover:bg-blue-50 transition-all group"
                                         >
-                                            <div className="w-12 h-12 bg-stone-900 rounded-2xl flex items-center justify-center text-white mr-4">
+                                            <div className="w-12 h-12 bg-[#0071bc] rounded-2xl flex items-center justify-center text-white mr-4">
                                                 {isPaying && paymentMethod === 'qris' ? <Loader2 className="animate-spin" size={20} /> : <QrCode size={20} />}
                                             </div>
                                             <div className="text-left">
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Pay via</p>
-                                                <p className={`${fontJudul.className} text-lg uppercase`}>QRIS / E-Wallet</p>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pay via</p>
+                                                <p className={`${fontJudul.className} text-lg uppercase text-[#0071bc]`}>QRIS / E-Wallet</p>
                                             </div>
                                         </button>
                                     </>
                                 ) : (
-                                    /* Tampilan QR Code Setelah di-Generate */
                                     <div className="flex flex-col items-center text-center py-4">
-                                        <div className="bg-stone-50 p-6 rounded-[2rem] border border-stone-100 mb-6">
-                                            {/* Midtrans memberikan URL image QRIS di actions[0].url */}
-                                            <img
-                                                src={qrisData.actions?.[0]?.url}
-                                                alt="QRIS Code"
-                                                className="w-64 h-64 object-contain"
-                                            />
+                                        <div className="bg-blue-50 p-6 rounded-[2rem] border border-blue-100 mb-6">
+                                            <img src={qrisData.actions?.[0]?.url} alt="QRIS Code" className="w-64 h-64 object-contain" />
                                         </div>
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">Scan with your preferred app</p>
-                                        <h4 className={`${fontJudul.className} text-2xl text-stone-900`}>Rp {(Number(order.total_harga) + Number(order.ongkos_kirim)).toLocaleString("id-ID")}</h4>
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">Scan with your preferred app</p>
+                                        <h4 className={`${fontJudul.className} text-2xl text-[#0071bc]`}>Rp {(Number(order.total_harga) + Number(order.ongkos_kirim)).toLocaleString("id-ID")}</h4>
                                         <button
                                             onClick={() => { setQrisData(null); setIsModalOpen(false); }}
-                                            className="mt-8 text-[10px] font-bold uppercase tracking-widest text-stone-400 underline underline-offset-4"
+                                            className="mt-8 text-[10px] font-bold uppercase tracking-widest text-slate-400 underline underline-offset-4"
                                         >
                                             Back to details
                                         </button>
@@ -344,8 +284,8 @@ export default function OrderDetailPage() {
                 )}
             </AnimatePresence>
 
-            {/* NAVBAR */}
-            <nav className="fixed w-full z-[100] bg-stone-900/90 backdrop-blur-xl border-b border-white/5 h-20 flex items-center px-8">
+            {/* NAVBAR[cite: 7] */}
+            <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 h-20 flex items-center px-8">
                 <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
                     <Link href="/orders" className="flex items-center space-x-3 text-white/60 hover:text-white transition-all group">
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
@@ -357,55 +297,46 @@ export default function OrderDetailPage() {
             </nav>
 
             <main className="pt-40 pb-20 px-6 max-w-7xl mx-auto">
-
-                {/* HEADER INFO */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                         <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-8 h-[1px] bg-stone-300"></div>
-                            <p className="text-[10px] text-stone-400 font-bold uppercase tracking-[0.4em]">Transaction Record</p>
+                            <div className="w-8 h-[1px] bg-white/30"></div>
+                            <p className="text-[10px] text-white/60 font-bold uppercase tracking-[0.4em]">Transaction Record</p>
                         </div>
-                        <h1 className={`${fontJudul.className} text-4xl md:text-6xl text-stone-900 uppercase tracking-tighter leading-none`}>
-                            #{order.id} <span className="text-stone-300 italic font-light">Details</span>
+                        <h1 className={`${fontJudul.className} text-4xl md:text-6xl text-white uppercase tracking-tighter leading-none`}>
+                            #{order.id} <span className="text-white/40 italic font-light">Details</span>
                         </h1>
                     </motion.div>
 
                     <div className={`px-6 py-2.5 rounded-full border text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm
-                        ${order.status_pembayaran === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                        ${order.status_pembayaran === 'success' ? 'bg-white/10 text-white border-white/20' : 'bg-white text-[#0071bc] border-white'}`}>
                         {order.status_pembayaran === 'success' ? 'Payment Verified' : 'Awaiting Payment'}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-                    {/* LEFT CONTENT: ITEMS & SHIPPING */}
                     <div className="lg:col-span-8 space-y-8">
-                        <section className="bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-                            <div className="p-8 border-b border-stone-50 bg-stone-50/30 flex justify-between items-center">
-                                <h3 className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Curated Selection</h3>
-                                <span className="text-[10px] text-stone-300 font-bold uppercase">{order.details?.length} Essence(s)</span>
+                        <section className="bg-white rounded-[2.5rem] border border-blue-50 overflow-hidden shadow-2xl shadow-blue-900/20">
+                            <div className="p-8 border-b border-blue-50 bg-blue-50/30 flex justify-between items-center text-[#0071bc]">
+                                <h3 className="text-[10px] font-bold uppercase tracking-widest opacity-60">Curated Selection</h3>
+                                <span className="text-[10px] font-bold uppercase">{order.details?.length} Essence(s)</span>
                             </div>
 
-                            <div className="divide-y divide-stone-50">
+                            <div className="divide-y divide-blue-50">
                                 {order.details?.map((item: any) => (
                                     <div key={item.id} className="p-8 flex items-center space-x-8 group">
-                                        <div className="w-20 h-24 bg-stone-50 rounded-2xl overflow-hidden relative shrink-0 border border-stone-100 group-hover:border-stone-200 transition-colors">
-                                            <Image
-                                                src={item.product?.image_url || "/img/placeholder.png"}
-                                                alt={item.product?.nama}
-                                                fill
-                                                className="object-cover"
-                                            />
+                                        <div className="w-20 h-24 bg-blue-50 rounded-2xl overflow-hidden relative shrink-0 border border-blue-100 group-hover:border-blue-200 transition-colors">
+                                            <Image src={item.product?.image_url || "/img/placeholder.png"} alt={item.product?.nama} fill className="object-cover" />
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest mb-1">SKU: {item.product?.id}</p>
-                                            <h4 className={`${fontJudul.className} text-xl text-stone-800 uppercase`}>{item.product?.nama}</h4>
-                                            <p className="text-[11px] text-stone-400 font-medium mt-1 uppercase tracking-wider">
+                                        <div className="flex-1 min-w-0 text-[#0071bc]">
+                                            <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest mb-1">SKU: {item.product?.id}</p>
+                                            <h4 className={`${fontJudul.className} text-xl uppercase`}>{item.product?.nama}</h4>
+                                            <p className="text-[11px] opacity-60 font-medium mt-1 uppercase tracking-wider">
                                                 {item.jumlah} Unit • Rp {Number(item.harga_saat_beli).toLocaleString("id-ID")}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className={`${fontJudul.className} text-stone-900 text-lg`}>
+                                        <div className="text-right text-[#0071bc]">
+                                            <p className={`${fontJudul.className} text-lg`}>
                                                 Rp {(item.jumlah * Number(item.harga_saat_beli)).toLocaleString("id-ID")}
                                             </p>
                                         </div>
@@ -415,53 +346,52 @@ export default function OrderDetailPage() {
                         </section>
 
                         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-[2.5rem] p-10 border border-stone-100 shadow-sm space-y-6">
-                                <div className="flex items-center space-x-3">
-                                    <Truck size={16} className="text-stone-300" />
-                                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Delivery Address</h3>
+                            <div className="bg-white rounded-[2.5rem] p-10 border border-blue-50 shadow-sm space-y-6 text-[#0071bc]">
+                                <div className="flex items-center space-x-3 opacity-40">
+                                    <Truck size={16} />
+                                    <h3 className="text-[10px] font-bold uppercase tracking-widest">Delivery Address</h3>
                                 </div>
-                                <p className="text-sm text-stone-600 font-light leading-relaxed italic">"{order.alamat_pengiriman}"</p>
+                                <p className="text-sm font-light leading-relaxed italic opacity-80">"{order.alamat_pengiriman}"</p>
                                 <div className="pt-4">
-                                    <span className="text-[9px] bg-stone-900 text-white px-3 py-1.5 rounded-full uppercase font-bold tracking-widest">{order.kurir}</span>
+                                    <span className="text-[9px] bg-[#0071bc] text-white px-3 py-1.5 rounded-full uppercase font-bold tracking-widest">{order.kurir}</span>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-[2.5rem] p-10 border border-stone-100 shadow-sm flex flex-col justify-between space-y-6">
+                            <div className="bg-white rounded-[2.5rem] p-10 border border-blue-50 shadow-sm flex flex-col justify-between space-y-6 text-[#0071bc]">
                                 <div>
-                                    <div className="flex items-center space-x-3 mb-6">
-                                        <MessageSquare size={16} className="text-stone-300" />
-                                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Artisan Notes</h3>
+                                    <div className="flex items-center space-x-3 mb-6 opacity-40">
+                                        <MessageSquare size={16} />
+                                        <h3 className="text-[10px] font-bold uppercase tracking-widest">Artisan Notes</h3>
                                     </div>
-                                    <p className="text-xs text-stone-400 italic leading-relaxed">
+                                    <p className="text-xs italic leading-relaxed opacity-60">
                                         {order.catatan_pengiriman || "No specific instructions provided for this fragrance shipment."}
                                     </p>
                                 </div>
-                                <div className="pt-6 border-t border-stone-50 flex items-center justify-between">
-                                    <span className="text-[9px] text-stone-300 uppercase font-black tracking-widest">System Record</span>
-                                    <span className="text-[9px] text-stone-400 font-mono">UID-{order.id}</span>
+                                <div className="pt-6 border-t border-blue-50 flex items-center justify-between opacity-40">
+                                    <span className="text-[9px] uppercase font-black tracking-widest">System Record</span>
+                                    <span className="text-[9px] font-mono">UID-{order.id}</span>
                                 </div>
                             </div>
                         </section>
                     </div>
 
-                    {/* RIGHT CONTENT: SUMMARY STICKY */}
+                    {/* SUMMARY STICKY[cite: 7] */}
                     <div className="lg:col-span-4">
-                        <div className="bg-stone-900 rounded-[2.5rem] p-10 text-white sticky top-32 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
-                            <h3 className={`${fontJudul.className} text-2xl uppercase tracking-widest mb-10 border-b border-white/5 pb-6`}>Investment</h3>
-
+                        <div className="bg-white rounded-[2.5rem] p-10 text-[#0071bc] sticky top-32 shadow-2xl shadow-blue-900/40">
+                            <h3 className={`${fontJudul.className} text-2xl uppercase tracking-widest mb-10 border-b border-blue-50 pb-6`}>Investment</h3>
                             <div className="space-y-6 mb-12">
-                                <div className="flex justify-between text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold">
+                                <div className="flex justify-between opacity-40 text-[10px] uppercase tracking-[0.2em] font-bold">
                                     <span>Subtotal</span>
-                                    <span className="text-white">Rp {Number(order.total_harga).toLocaleString("id-ID")}</span>
+                                    <span className="opacity-100">Rp {Number(order.total_harga).toLocaleString("id-ID")}</span>
                                 </div>
-                                <div className="flex justify-between text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold">
+                                <div className="flex justify-between opacity-40 text-[10px] uppercase tracking-[0.2em] font-bold">
                                     <span>Shipping Fee</span>
-                                    <span className="text-white">Rp {Number(order.ongkos_kirim).toLocaleString("id-ID")}</span>
+                                    <span className="opacity-100">Rp {Number(order.ongkos_kirim).toLocaleString("id-ID")}</span>
                                 </div>
-                                <div className="h-[1px] bg-white/5 my-2"></div>
+                                <div className="h-[1px] bg-blue-50 my-2"></div>
                                 <div className="flex flex-col space-y-2">
-                                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-[0.3em]">Total Amount</span>
-                                    <span className={`${fontJudul.className} text-4xl text-amber-200`}>
+                                    <span className="text-[9px] opacity-40 font-bold uppercase tracking-[0.3em]">Total Amount</span>
+                                    <span className={`${fontJudul.className} text-4xl`}>
                                         Rp {(Number(order.total_harga) + Number(order.ongkos_kirim)).toLocaleString("id-ID")}
                                     </span>
                                 </div>
@@ -470,18 +400,18 @@ export default function OrderDetailPage() {
                             {order.status_pembayaran === 'pending' ? (
                                 <button
                                     onClick={() => setIsModalOpen(true)}
-                                    className="w-full py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 shadow-xl bg-white text-stone-900 hover:bg-amber-100 hover:-translate-y-1"
+                                    className="w-full py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 shadow-xl bg-[#0071bc] text-white hover:bg-blue-800 hover:-translate-y-1"
                                 >
                                     Authorize Payment
                                 </button>
                             ) : (
-                                <div className="w-full bg-white/5 border border-white/10 py-5 rounded-2xl flex items-center justify-center space-x-3">
-                                    <ShieldCheck size={16} className="text-emerald-500" />
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Fulfilled</span>
+                                <div className="w-full bg-blue-50 border border-blue-100 py-5 rounded-2xl flex items-center justify-center space-x-3">
+                                    <ShieldCheck size={16} />
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-60">Fulfilled</span>
                                 </div>
                             )}
 
-                            <p className="mt-10 text-[9px] text-white/20 text-center leading-relaxed font-light uppercase tracking-widest">
+                            <p className="mt-10 text-[9px] opacity-40 text-center leading-relaxed font-light uppercase tracking-widest">
                                 Thank you for choosing Evomi.<br />The essence of presence.
                             </p>
                         </div>

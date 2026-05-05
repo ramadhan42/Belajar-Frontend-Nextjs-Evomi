@@ -8,18 +8,18 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ChevronRight, Package, Calendar, Tag } from "lucide-react";
 
-// Tambahkan ini di atas komponen OrderHistoryPage
+// Variants untuk animasi kontainer[cite: 6]
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.15 // Memberi jeda antar item saat muncul
+            staggerChildren: 0.15
         }
     }
 };
 
-const itemVariants = {  // Variants untuk animasi item
+const itemVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
         opacity: 1,
@@ -28,20 +28,19 @@ const itemVariants = {  // Variants untuk animasi item
     }
 };
 
-// --- Font Configuration ---
+// --- Font Configuration[cite: 6] ---
 const fontJudul = localFont({
     src: "../fonts/8 Heavy.ttf",
     variable: "--font-brand",
     display: "swap",
 });
 
-const fontCaption = localFont({ // Font untuk caption
+const fontCaption = localFont({
     src: "../fonts/Nohemi-Regular.otf",
     variable: "--font-body",
     display: "swap",
 });
 
-// Komponen utama
 export default function OrderHistoryPage() {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
@@ -91,15 +90,15 @@ export default function OrderHistoryPage() {
             case "success": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "pending": return "bg-amber-50 text-amber-700 border-amber-100";
             case "failed": case "expired": return "bg-rose-50 text-rose-700 border-rose-100";
-            default: return "bg-stone-50 text-stone-500 border-stone-100";
+            default: return "bg-white/10 text-white/60 border-white/10";
         }
     };
 
     return (
-        <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#FBFBF9] font-sans antialiased text-stone-900 selection:bg-amber-100`}>
+        <div className={`${fontCaption.variable} ${fontJudul.variable} min-h-screen bg-[#0071bc] font-sans antialiased text-white selection:bg-white/20`}>
 
-            {/* NAVBAR - Premium Dark Glassmorphism */}
-            <nav className="fixed w-full z-[100] bg-stone-900/90 backdrop-blur-xl border-b border-white/5 shadow-sm">
+            {/* NAVBAR - Penyesuaian tema biru[cite: 6] */}
+            <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="hover:opacity-70 transition-opacity">
                         <Image
@@ -115,9 +114,9 @@ export default function OrderHistoryPage() {
                         {user && (
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex items-center space-x-3 border border-white/10 rounded-full p-1 pr-4 hover:bg-white/5 transition-all text-white"
+                                className="flex items-center space-x-3 border border-white/20 rounded-full p-1 pr-4 hover:bg-white/10 transition-all text-white"
                             >
-                                <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-900 flex items-center justify-center text-[10px] font-black uppercase">
+                                <div className="w-8 h-8 rounded-full bg-white text-[#0071bc] flex items-center justify-center text-[10px] font-black uppercase">
                                     {user.name.charAt(0)}
                                 </div>
                                 <span className="text-[11px] font-bold uppercase tracking-widest">{user.username}</span>
@@ -125,9 +124,9 @@ export default function OrderHistoryPage() {
                         )}
 
                         {isMenuOpen && (
-                            <div className="absolute right-0 mt-3 w-56 bg-white rounded-[1.5rem] shadow-2xl border border-stone-100 py-3 z-50 overflow-hidden">
-                                <Link href="/profile" className="block px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-stone-600 hover:bg-stone-50 transition-colors">Profile</Link>
-                                <div className="h-[1px] bg-stone-50 mx-4 my-1"></div>
+                            <div className="absolute right-0 mt-3 w-56 bg-white rounded-[1.5rem] shadow-2xl border border-blue-100 py-3 z-50 overflow-hidden text-[#0071bc]">
+                                <Link href="/profile" className="block px-6 py-3 text-[11px] uppercase tracking-widest font-bold hover:bg-blue-50 transition-colors">Profile</Link>
+                                <div className="h-[1px] bg-blue-50 mx-4 my-1"></div>
                                 <button onClick={handleLogout} className="w-full text-left px-6 py-3 text-[11px] uppercase tracking-widest font-bold text-rose-500 hover:bg-rose-50 transition-colors">Logout</button>
                             </div>
                         )}
@@ -135,28 +134,28 @@ export default function OrderHistoryPage() {
                 </div>
             </nav>
 
-            {/* AMBIENT BACKGROUND */}
+            {/* AMBIENT BACKGROUND - Disesuaikan agar menyatu dengan biru[cite: 6] */}
             <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-                <div className="absolute top-40 left-[-10%] w-[40rem] h-[40rem] bg-stone-200/40 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-10 right-[-5%] w-[30rem] h-[30rem] bg-amber-100/30 rounded-full blur-[100px]"></div>
+                <div className="absolute top-40 left-[-10%] w-[40rem] h-[40rem] bg-white/5 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-10 right-[-5%] w-[30rem] h-[30rem] bg-blue-400/20 rounded-full blur-[100px]"></div>
             </div>
 
             <main className="pt-40 pb-24 px-6 max-w-5xl mx-auto">
-                {/* HEADER */}
+                {/* HEADER[cite: 6] */}
                 <header className="mb-16">
                     <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-10 h-[1px] bg-stone-300"></div>
-                        <span className="text-[10px] uppercase tracking-[0.4em] text-stone-400 font-bold">Archives</span>
+                        <div className="w-10 h-[1px] bg-white/30"></div>
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-white/60 font-bold">Archives</span>
                     </div>
-                    <h1 className={`${fontJudul.className} text-5xl md:text-6xl text-stone-900 uppercase tracking-tighter leading-none`}>
-                        Order <span className="italic font-light text-stone-300">History</span>
+                    <h1 className={`${fontJudul.className} text-5xl md:text-6xl text-white uppercase tracking-tighter leading-none`}>
+                        Order <span className="italic font-light text-white/40">History</span>
                     </h1>
                 </header>
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-32 space-y-6">
-                        <div className="w-12 h-12 border-[3px] border-stone-100 border-t-stone-900 rounded-full animate-spin"></div>
-                        <p className="text-stone-400 text-[10px] tracking-[0.3em] uppercase font-bold">Retreiving Archives...</p>
+                        <div className="w-12 h-12 border-[3px] border-white/10 border-t-white rounded-full animate-spin"></div>
+                        <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase font-bold">Retreiving Archives...</p>
                     </div>
                 ) : orders.length > 0 ? (
                     <motion.div
@@ -172,14 +171,14 @@ export default function OrderHistoryPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                                 key={order.id}
-                                className="bg-white border border-stone-100 rounded-[2.5rem] overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.03)] transition-all duration-700 group"
+                                className="bg-white border border-blue-100 rounded-[2.5rem] overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 group"
                             >
                                 <div className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
 
-                                    {/* Info Utama */}
+                                    {/* Info Utama[cite: 6] */}
                                     <div className="flex items-start space-x-8">
-                                        <div className="w-24 h-28 bg-stone-50 rounded-2xl flex-shrink-0 relative overflow-hidden border border-stone-100 group-hover:border-stone-200 transition-colors">
-                                            <div className="absolute inset-0 flex items-center justify-center text-stone-200 group-hover:text-stone-300 transition-colors">
+                                        <div className="w-24 h-28 bg-blue-50 rounded-2xl flex-shrink-0 relative overflow-hidden border border-blue-100 group-hover:border-blue-200 transition-colors">
+                                            <div className="absolute inset-0 flex items-center justify-center text-[#0071bc]/20 group-hover:text-[#0071bc]/40 transition-colors">
                                                 <Package size={32} strokeWidth={1} />
                                             </div>
                                         </div>
@@ -189,33 +188,33 @@ export default function OrderHistoryPage() {
                                                 <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyle(order.status_pembayaran)}`}>
                                                     {order.status_pembayaran}
                                                 </span>
-                                                <span className="text-[10px] text-stone-300 font-medium tracking-widest uppercase">#{order.order_number || order.id}</span>
+                                                <span className="text-[10px] text-slate-300 font-medium tracking-widest uppercase">#{order.order_number || order.id}</span>
                                             </div>
 
-                                            <h3 className={`${fontJudul.className} text-2xl text-stone-800 uppercase leading-tight group-hover:text-amber-900 transition-colors`}>
+                                            <h3 className={`${fontJudul.className} text-2xl text-[#0071bc] uppercase leading-tight group-hover:text-blue-800 transition-colors`}>
                                                 {order.items?.[0]?.product_name || "Artisan Fragrance"}
-                                                {order.items?.length > 1 && <span className="text-xs normal-case font-body font-light text-stone-400 ml-3 italic">+{order.items.length - 1} other scents</span>}
+                                                {order.items?.length > 1 && <span className="text-xs normal-case font-body font-light text-slate-400 ml-3 italic">+{order.items.length - 1} other scents</span>}
                                             </h3>
 
-                                            <div className="flex items-center space-x-4 text-[11px] text-stone-400 font-medium">
+                                            <div className="flex items-center space-x-4 text-[11px] text-slate-400 font-medium">
                                                 <div className="flex items-center space-x-1.5">
-                                                    <Calendar size={12} className="text-stone-300" />
+                                                    <Calendar size={12} className="text-slate-300" />
                                                     <span>{new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Harga & Detail Link */}
-                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-6 border-t md:border-t-0 pt-6 md:pt-0 border-stone-50">
+                                    {/* Harga & Detail Link[cite: 6] */}
+                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-6 border-t md:border-t-0 pt-6 md:pt-0 border-blue-50">
                                         <div className="md:text-right">
-                                            <p className="text-[9px] text-stone-400 uppercase tracking-[0.2em] font-black mb-1">Investment</p>
-                                            <p className={`${fontJudul.className} text-xl text-stone-900`}>Rp {Number(order.total_harga).toLocaleString("id-ID")}</p>
+                                            <p className="text-[9px] text-slate-400 uppercase tracking-[0.2em] font-black mb-1">Investment</p>
+                                            <p className={`${fontJudul.className} text-xl text-[#0071bc]`}>Rp {Number(order.total_harga).toLocaleString("id-ID")}</p>
                                         </div>
 
                                         <Link
                                             href={`/orders/${order.id}`}
-                                            className="h-12 w-12 md:w-auto md:px-6 bg-stone-50 md:bg-stone-900 md:text-white rounded-full flex items-center justify-center gap-2 hover:bg-amber-900 transition-all group/btn"
+                                            className="h-12 w-12 md:w-auto md:px-6 bg-blue-50 md:bg-[#0071bc] md:text-white text-[#0071bc] rounded-full flex items-center justify-center gap-2 hover:bg-blue-800 hover:text-white transition-all group/btn"
                                         >
                                             <span className="hidden md:block text-[10px] font-bold uppercase tracking-widest">View Details</span>
                                             <ChevronRight size={16} className="md:group-hover/btn:translate-x-1 transition-transform" />
@@ -226,16 +225,16 @@ export default function OrderHistoryPage() {
                         ))}
                     </motion.div>
                 ) : (
-                    /* EMPTY STATE - Artisan Style */
-                    <div className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-stone-200">
-                        <div className="w-24 h-24 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                            <Tag size={32} className="text-stone-200" strokeWidth={1} />
+                    /* EMPTY STATE[cite: 6] */
+                    <div className="text-center py-24 bg-white/5 rounded-[3rem] border border-dashed border-white/20">
+                        <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                            <Tag size={32} className="text-white/20" strokeWidth={1} />
                         </div>
-                        <h3 className={`${fontJudul.className} text-2xl text-stone-800 uppercase tracking-tight`}>Empty Archives</h3>
-                        <p className="text-stone-400 font-light mt-3 mb-10 max-w-xs mx-auto text-sm italic leading-relaxed">
+                        <h3 className={`${fontJudul.className} text-2xl text-white uppercase tracking-tight`}>Empty Archives</h3>
+                        <p className="text-white/60 font-light mt-3 mb-10 max-w-xs mx-auto text-sm italic leading-relaxed">
                             Sepertinya Anda belum memulai perjalanan aroma bersama Evomi.
                         </p>
-                        <Link href="/produk" className="inline-block bg-stone-900 text-white px-10 py-4 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-amber-900 transition-all shadow-xl shadow-stone-100">
+                        <Link href="/produk" className="inline-block bg-white text-[#0071bc] px-10 py-4 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/20">
                             Explore Collections
                         </Link>
                     </div>
@@ -243,7 +242,7 @@ export default function OrderHistoryPage() {
             </main>
 
             <footer className="py-12 text-center">
-                <p className="text-[9px] text-stone-300 uppercase tracking-[0.4em] font-bold">Evomi Fragrance House • Jakarta</p>
+                <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] font-bold">Evomi Fragrance House • Jakarta</p>
             </footer>
         </div>
     );

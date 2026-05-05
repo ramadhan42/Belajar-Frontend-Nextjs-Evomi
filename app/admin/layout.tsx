@@ -6,7 +6,7 @@ import { LogOut, Menu } from "lucide-react"; // Pastikan lucide-react terinstall
 import Sidebar from "@/components/admin/Sidebar"; // Sesuaikan path jika berbeda
 
 // AdminLayout adalah komponen layout untuk halaman admin
-export default function AdminLayout({ children }: { children: React.ReactNode }) {  
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [adminData, setAdminData] = useState({ name: "Admin", email: "" });
@@ -63,10 +63,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // 3. Return JSX
     return (
         <div className="flex min-h-screen bg-[#F8F8F8]">
-            
+
             {/* --- KOMPONEN SIDEBAR --- */}
             {/* Kita kirimkan state isOpen dan fungsi onClose ke Sidebar */}
-            <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} adminData={adminData} onLogout={handleLogout}/>
+            <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} adminData={adminData} onLogout={handleLogout} />
 
             {/* --- MAIN CONTENT AREA --- */}
             {/* Margin left (lg:ml-64) agar konten tidak tertutup sidebar di mode Desktop */}

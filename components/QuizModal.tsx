@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
-// Data kuis berbasis 4 opsi pilihan
+// Data kuis berbasis 4 opsi pilihan[cite: 11]
 const quizData = [
   {
     question: "Gimana cara kamu menghabiskan waktu luang?",
@@ -47,7 +47,6 @@ const quizData = [
   }
 ];
 
-// Mapping gambar produk berdasarkan hasil
 const productImages: Record<string, string> = {
   "Purpose Prestige": "https://ramadhan.alwaysdata.net/storage/new products/gemini - purpose prestige.png",
   "Peaceful Calm": "https://ramadhan.alwaysdata.net/storage/new products/gemini - peaceful calm.png",
@@ -60,14 +59,12 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
   const [userChoices, setUserChoices] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
 
-  // reset quiz function
   const resetQuiz = () => {
     setCurrent(0);
     setUserChoices([]);
     setFinished(false);
   };
 
-  // handle answer function
   const handleAnswer = (opt: string) => {
     setUserChoices([...userChoices, opt]);
     if (current + 1 < quizData.length) {
@@ -77,7 +74,6 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
     }
   };
 
-  // get result function
   const getResult = () => {
     const counts: Record<string, number> = {};
     userChoices.forEach((choice, index) => {
@@ -96,24 +92,25 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Overlay dengan warna tema gelap[cite: 11] */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose} className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[200]"
+            onClick={onClose} className="fixed inset-0 bg-[#002d4b]/60 backdrop-blur-sm z-[200]"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 m-auto z-[201] w-[90%] max-w-md h-fit max-h-[90vh] overflow-y-auto bg-white p-8 rounded-3xl shadow-2xl"
+            className="fixed inset-0 m-auto z-[201] w-[90%] max-w-md h-fit max-h-[90vh] overflow-y-auto bg-white p-8 rounded-3xl shadow-2xl border border-blue-50"
           >
             {!finished ? (
               <div className="text-center">
-                <h3 className="text-xs uppercase tracking-[0.2em] text-stone-400 mb-6">Quiz Evomi</h3>
-                <p className="font-bold text-xl mb-8">{quizData[current].question}</p>
+                <h3 className="text-xs uppercase tracking-[0.2em] text-[#0071bc] mb-6 font-bold opacity-60">Quiz Evomi</h3>
+                <p className="font-bold text-xl mb-8 text-[#0071bc]">{quizData[current].question}</p>
                 <div className="grid grid-cols-1 gap-3">
                   {quizData[current].options.map(opt => (
                     <button 
                       key={opt} 
                       onClick={() => handleAnswer(opt)} 
-                      className="w-full py-3 px-4 border border-stone-200 hover:bg-stone-900 hover:text-white transition-all uppercase text-[10px] tracking-widest font-bold"
+                      className="w-full py-3 px-4 border border-blue-100 text-[#0071bc] hover:bg-[#0071bc] hover:text-white transition-all uppercase text-[10px] tracking-widest font-bold rounded-xl"
                     >
                       {opt}
                     </button>
@@ -122,54 +119,41 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
               </div>
             ) : (
               <div className="text-center py-6">
-                <h3 className="text-xs uppercase tracking-[0.2em] text-stone-400 mb-2">Tipe Kamu Adalah</h3>
-                <h2 className="text-3xl font-bold mb-6 text-stone-900">{finalResult}</h2>
+                <h3 className="text-xs uppercase tracking-[0.2em] text-blue-400 mb-2 font-bold">Tipe Kamu Adalah</h3>
+                <h2 className="text-3xl font-bold mb-6 text-[#0071bc]">{finalResult}</h2>
                 
-                {/* Image Produk Dinamis */}
-                {/* <div className="relative w-48 h-48 mx-auto mb-6 drop-shadow-xl">
-                  <Image
-                    src={productImages[finalResult]}
-                    alt={finalResult}
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div> */}
-
-                <p className="text-stone-500 text-sm mb-8 leading-relaxed px-4">
+                <p className="text-slate-500 text-sm mb-8 leading-relaxed px-4">
                   Aroma ini sangat mencerminkan karaktermu yang unik. Siap meningkatkan rasa percaya dirimu?
                 </p>
 
-                <div className="bg-stone-50 p-6 rounded-2xl mb-8 border border-stone-100">
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-stone-900 mb-4">
+                {/* Bagian Order Store[cite: 11] */}
+                <div className="bg-blue-50/50 p-6 rounded-2xl mb-8 border border-blue-100">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-[#0071bc] mb-4">
                     Order di Official Store:
                   </p>
                   <div className="flex flex-col gap-3">
-                    {/* Button Tokopedia */}
                     <a 
                       href="https://www.tokopedia.com/toko-evomi" 
                       target="_blank" 
-                      className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-stone-200 hover:border-stone-900 transition-all rounded-xl shadow-sm"
+                      className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-blue-100 hover:border-[#0071bc] transition-all rounded-xl shadow-sm"
                     >
-                      {/* <Image src="https://ramadhan.alwaysdata.net/storage/toko online/tokopedia.png" alt="Tokopedia" width={18} height={18} /> */}
-                      <span className="uppercase text-[10px] tracking-widest font-bold text-stone-700">Tokopedia</span>
+                      <span className="uppercase text-[10px] tracking-widest font-bold text-[#0071bc]">Tokopedia</span>
                     </a>
                     
-                    {/* Button Shopee */}
                     <a 
                       href="https://shopee.co.id/toko-evomi" 
                       target="_blank" 
-                      className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-stone-200 hover:border-stone-900 transition-all rounded-xl shadow-sm"
+                      className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-blue-100 hover:border-[#0071bc] transition-all rounded-xl shadow-sm"
                     >
-                      {/* <Image src="https://ramadhan.alwaysdata.net/storage/toko online/shopee.png" alt="Shopee" width={18} height={18} /> */}
-                      <span className="uppercase text-[10px] tracking-widest font-bold text-stone-700">Shopee</span>
+                      <span className="uppercase text-[10px] tracking-widest font-bold text-[#0071bc]">Shopee</span>
                     </a>
                   </div>
                 </div>
 
+                {/* Tombol Kontrol[cite: 11] */}
                 <div className="flex flex-col gap-3">
-                  <button onClick={resetQuiz} className="w-full py-3 border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-all uppercase text-[10px] tracking-widest font-bold">Ulangi Quiz</button>
-                  <button onClick={onClose} className="w-full py-3 bg-stone-900 text-white uppercase text-[10px] tracking-widest font-bold">Tutup</button>
+                  <button onClick={resetQuiz} className="w-full py-3 border border-[#0071bc] text-[#0071bc] hover:bg-blue-50 transition-all uppercase text-[10px] tracking-widest font-bold rounded-xl">Ulangi Quiz</button>
+                  <button onClick={onClose} className="w-full py-3 bg-[#0071bc] text-white hover:bg-blue-800 uppercase text-[10px] tracking-widest font-bold rounded-xl shadow-lg shadow-blue-100">Tutup</button>
                 </div>
               </div>
             )}
