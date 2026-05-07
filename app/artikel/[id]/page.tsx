@@ -471,57 +471,38 @@ export default function ArtikelDetailPage() {
                 prose prose-stone prose-lg
                 max-w-none
                 
-                /* --- Perbaikan Word Break --- */
-                whitespace-normal
-                break-normal 
-                overflow-wrap-anywhere
-                /* ---------------------------- */
+                /* --- Fix Teks Terpotong --- */
+                whitespace-pre-wrap 
+                break-normal
+                [word-break:normal]
+                [overflow-wrap:anywhere]
+                hyphens-none
+                /* -------------------------- */
                 
                 prose-headings:font-bold
                 prose-headings:text-stone-900
                 prose-headings:tracking-tight
                 prose-headings:scroll-mt-32
                 
-                prose-h1:text-4xl
-                prose-h2:text-3xl
-                prose-h3:text-2xl
-                
                 prose-p:text-stone-700
                 prose-p:leading-8
                 prose-p:mb-6
-                /* Ubah text-justify ke text-left jika masih terasa aneh spasinya */
+                /* Hilangkan text-justify agar spasi antar kata tidak dipaksa renggang */
                 prose-p:text-left 
                 
                 prose-strong:text-stone-900
                 prose-strong:font-semibold
                 
-                prose-a:text-[#0071bc]
-                prose-a:no-underline
-                hover:prose-a:underline
-                
                 prose-ul:list-disc
                 prose-ol:list-decimal
-                prose-li:marker:text-stone-500
                 prose-li:text-stone-700
                 prose-li:leading-8
-                
-                prose-blockquote:border-l-4
-                prose-blockquote:border-[#0071bc]
-                prose-blockquote:bg-stone-50
-                prose-blockquote:px-6
-                prose-blockquote:py-3
-                prose-blockquote:rounded-r-2xl
-                prose-blockquote:text-stone-700
                 
                 prose-img:rounded-3xl
                 prose-img:shadow-xl
                 prose-img:my-10
                 
-                prose-code:text-pink-600
-                prose-pre:bg-stone-900
-                prose-pre:text-stone-100
-                
-                /* Hapus break-words lama */
+                break-words
                 overflow-hidden
                 "
               dangerouslySetInnerHTML={{ __html: article.content }}
