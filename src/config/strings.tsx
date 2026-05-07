@@ -5,7 +5,7 @@ export const GLOBAL_DESCRIPTION = "Ini adalah deskripsi yang dipakai di banyak h
 // Base Url
 export const BASE_URL_LOCAL = "http://127.0.0.1:8000"
 export const BASE_URL_ONLINE = "https://ramadhan.alwaysdata.net"
-export const BASE_URL = "http://127.0.0.1:8000"
+export const BASE_URL = "https://ramadhan.alwaysdata.net"
 
 // Api String
 export const STRING_API = "/api"
