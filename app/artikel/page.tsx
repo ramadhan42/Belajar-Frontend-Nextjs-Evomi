@@ -69,7 +69,9 @@ export default function ArtikelPage() {
 
     // States untuk Navbar & Global
     const [mounted, setMounted] = useState(false);
-    const [user, setUser] = useState<{ email: string; name: string; username: string; image: string; } | null>(null);
+    const [user, setUser] = useState<{
+        id: any; email: string; name: string; username: string; image: string;
+    } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isQuizOpen, setIsQuizOpen] = useState(false);
@@ -120,6 +122,58 @@ export default function ArtikelPage() {
 
         fetchArticles();
     }, []);
+
+    // Tambahkan di dalam komponen EvomiLandingPage()
+    // Status user online / offline, saat user menutup browser
+    useEffect(() => {
+        if (!user) return;
+
+        // 1. Set status ONLINE saat masuk halaman
+        const setStatus = async (status: number) => {
+            try {
+                await fetch(`${BASE_URL}/api/user/status`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+                    },
+                    body: JSON.stringify({ is_online: status })
+                });
+            } catch (err) {
+                console.error("Gagal update status:", err);
+            }
+        };
+
+        setStatus(1); // Set Online
+
+        // 2. Set status OFFLINE saat browser ditutup
+        const handleVisibilityChange = () => {
+            // navigator.sendBeacon tetap berjalan meskipun tab sudah tertutup
+            if (document.visibilityState === 'hidden') {
+                const url = `${BASE_URL}/api/user/status-beacon`;
+                const data = JSON.stringify({
+                    user_id: user.id, // Pastikan user object punya ID
+                    is_online: 0
+                });
+                const blob = new Blob([data], { type: 'application/json' });
+                navigator.sendBeacon(url, blob);
+            }
+        };
+
+        // Kita gunakan beforeunload untuk browser close
+        const handleUnload = () => {
+            const url = `${BASE_URL}/api/user/status-beacon`;
+            const data = JSON.stringify({ user_id: user.id, is_online: 0 });
+            const blob = new Blob([data], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        };
+
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload);
+        };
+    }, [user]);
 
     // --- HELPER FUNCTION: Membersihkan HTML dari React Quill ---
     const getExcerpt = (htmlContent: string, maxLength: number = 120) => {
@@ -364,6 +418,7 @@ export default function ArtikelPage() {
                     <div className="h-[1px] w-24 bg-stone-200"></div>
 
                     <div className="flex items-center space-x-2">
+                        
                         {/* Prev Button */}
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
@@ -382,8 +437,8 @@ export default function ArtikelPage() {
                                     key={num}
                                     onClick={() => handlePageChange(num)}
                                     className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${currentPage === num
-                                            ? "bg-stone-900 text-white shadow-lg"
-                                            : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
+                                        ? "bg-stone-900 text-white shadow-lg"
+                                        : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
                                         }`}
                                 >
                                     {String(num).padStart(2, '0')}
@@ -417,6 +472,7 @@ export default function ArtikelPage() {
                         <h2 className={`${fontJudul.className} text-3xl mb-5 tracking-widest text-stone-900`}>EVOMI</h2>
                         <p className="max-w-sm text-stone-500 text-sm font-light leading-relaxed">Menghadirkan pengalaman sensorik melalui kurasi aroma terbaik. Dedikasi pada seni artisan fragrance.</p>
                     </div>
+
                     <div className="md:col-span-3">
                         <h4 className="font-bold text-[11px] uppercase tracking-widest mb-6 text-stone-800">Contact Us</h4>
                         <ul className="text-stone-500 space-y-3 text-sm font-light">
@@ -424,6 +480,7 @@ export default function ArtikelPage() {
                             <li>Jakarta, Indonesia</li>
                         </ul>
                     </div>
+
                     <div className="md:col-span-4">
                         <h4 className="font-bold text-[11px] uppercase tracking-widest mb-6 text-stone-800">The Newsletter</h4>
                         <p className="text-stone-400 text-xs mb-4">Dapatkan akses eksklusif ke rilis terbaru kami.</p>
@@ -441,7 +498,6 @@ export default function ArtikelPage() {
                     </div>
                 </div>
             </motion.footer>
-
         </div>
     );
 }

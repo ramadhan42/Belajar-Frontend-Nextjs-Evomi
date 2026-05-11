@@ -27,7 +27,7 @@ const fadeInUp: Variants = {
   }
 };
 
-// 
+// Stagger Container
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -57,8 +57,8 @@ export default function EvomiLandingPage() {
 
   const router = useRouter();
   const [user, setUser] = useState<{
-    id: any; email: string; name: string; username: string; image: string; 
-} | null>(null);
+    id: any; email: string; name: string; username: string; image: string;
+  } | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -128,6 +128,7 @@ export default function EvomiLandingPage() {
   }, []);
 
   // Tambahkan di dalam komponen EvomiLandingPage()
+  // Status user online / offline, saat user menutup browser
   useEffect(() => {
     if (!user) return;
 
@@ -211,7 +212,7 @@ export default function EvomiLandingPage() {
     </div>
   );
 
-  // 
+  // Mobile Menu Vars
   const mobileMenuVars: Variants = {
     hidden: { opacity: 0, height: 0 },
     visible: {
@@ -272,7 +273,6 @@ export default function EvomiLandingPage() {
 
       {/* Render Komponen Modal Chat */}
       <ChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-
 
       {/* Komponen Modal */}
       <QuizModal isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
@@ -352,6 +352,7 @@ export default function EvomiLandingPage() {
                 className="md:hidden bg-[#0071bc] border-t border-white/10 overflow-hidden"
               >
                 <div className="px-8 py-10 flex flex-col space-y-8">
+
                   {/* Main Navigation */}
                   <div className="space-y-6">
                     {[

@@ -77,9 +77,17 @@ const ProductCard = ({ parfum }: { parfum: any }) => {
         <h3 className={`${fontJudul.className} text-base md:text-xl text-stone-800 uppercase leading-snug line-clamp-1 group-hover:text-amber-800 transition-colors`}>
           {parfum.nama}
         </h3>
+
+        {/* Bagian deskripsi yang sudah dimodifikasi */}
         <p className="text-[10px] text-stone-500 italic line-clamp-1 px-4">
-          {parfum.deskripsi}
+          {parfum.deskripsi
+            ? parfum.deskripsi
+              .replace(/<[^>]*>?/gm, '')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&amp;/g, '&')
+            : ''}
         </p>
+
         <p className="text-stone-700 font-medium text-[11px] md:text-sm tracking-wide pt-2">
           Rp {Number(parfum.harga_retail).toLocaleString("id-ID")}
         </p>
@@ -96,6 +104,72 @@ export default function ProductsPage() {
   // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 4; // Menampilkan 4 produk per halaman
+
+  const [user, setUser] = useState<{
+    id: any; email: string; name: string; username: string; image: string;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const token = localStorage.getItem("access_token");
+    const savedUser = localStorage.getItem("user_data");
+    if (token && savedUser) {
+      try { setUser(JSON.parse(savedUser)); } catch (error) { console.error(error); }
+    }
+  }, []);
+
+  // Tambahkan di dalam komponen EvomiLandingPage()
+  // Status user online / offline, saat user menutup browser
+  useEffect(() => {
+    if (!user) return;
+
+    // 1. Set status ONLINE saat masuk halaman
+    const setStatus = async (status: number) => {
+      try {
+        await fetch(`${BASE_URL}/api/user/status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          },
+          body: JSON.stringify({ is_online: status })
+        });
+      } catch (err) {
+        console.error("Gagal update status:", err);
+      }
+    };
+
+    setStatus(1); // Set Online
+
+    // 2. Set status OFFLINE saat browser ditutup
+    const handleVisibilityChange = () => {
+      // navigator.sendBeacon tetap berjalan meskipun tab sudah tertutup
+      if (document.visibilityState === 'hidden') {
+        const url = `${BASE_URL}/api/user/status-beacon`;
+        const data = JSON.stringify({
+          user_id: user.id, // Pastikan user object punya ID
+          is_online: 0
+        });
+        const blob = new Blob([data], { type: 'application/json' });
+        navigator.sendBeacon(url, blob);
+      }
+    };
+
+    // Kita gunakan beforeunload untuk browser close
+    const handleUnload = () => {
+      const url = `${BASE_URL}/api/user/status-beacon`;
+      const data = JSON.stringify({ user_id: user.id, is_online: 0 });
+      const blob = new Blob([data], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [user]);
+
 
   // useEffect
   useEffect(() => {
@@ -231,11 +305,10 @@ export default function ProductsPage() {
                         <button
                           key={num}
                           onClick={() => paginate(num)}
-                          className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${
-                            currentPage === num
-                              ? "bg-stone-900 text-white shadow-lg"
-                              : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
-                          }`}
+                          className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${currentPage === num
+                            ? "bg-stone-900 text-white shadow-lg"
+                            : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
+                            }`}
                         >
                           {String(num).padStart(2, '0')}
                         </button>
