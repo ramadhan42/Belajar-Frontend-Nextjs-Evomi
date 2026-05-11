@@ -36,16 +36,19 @@ html {
   height: 8px;
 }
 
+/* Track */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* Thumb */
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #d4d4d4, #a3a3a3);
   border-radius: 999px;
   transition: all 0.3s ease;
 }
 
+/* Thumb on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #a3a3a3, #737373);
 }
@@ -64,6 +67,7 @@ html {
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -95,11 +99,13 @@ body {
   display: none;
 }
 
+/*  */
 .scrollbar-hide {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
 
+/*  */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -110,6 +116,7 @@ body {
   }
 }
 
+/*  */
 .article-content {
   white-space: normal;
 }
@@ -122,6 +129,7 @@ body {
   line-height: 1.9;
 }
 
+/* FIX BREAK LINE */
 .article-content br {
   display: block;
   content: "";
@@ -136,6 +144,7 @@ body {
   margin-bottom: 1rem;
 }
 
+/* FIX ORDERED LIST */
 .article-content ol {
   list-style-type: decimal;
   padding-left: 2rem;
@@ -143,22 +152,26 @@ body {
   margin-bottom: 1rem;
 }
 
+/* FIX LIST ITEMS */
 .article-content li {
   display: list-item;
   margin-bottom: 0.5rem;
   line-height: 1.8;
 }
 
+/* FIX LIST ITEMS */
 .article-content li p {
   margin-bottom: 0.5rem;
 }
 
+/* FIX IMAGE */
 .article-content img {
   width: 100%;
   height: auto;
   object-fit: cover;
 }
 
+/* FIX EMBEDDED CONTENT */
 .article-content iframe {
   width: 100%;
   min-height: 400px;
@@ -167,16 +180,19 @@ body {
   margin-bottom: 2rem;
 }
 
+/* FIX CODE BLOCK */
 .article-content pre {
   overflow-x: auto;
   border-radius: 20px;
   padding: 1rem;
 }
 
+/* FIX BLOCKQUOTE */
 .article-content blockquote p {
   margin: 0;
 }
 
+/* FIX HEADINGS */
 .article-content h1,
 .article-content h2,
 .article-content h3,
