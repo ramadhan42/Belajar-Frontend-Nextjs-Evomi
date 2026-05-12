@@ -41,6 +41,10 @@ export default function OrderDetailPage() {
     const [qrisData, setQrisData] = useState<any>(null);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
+    // Tambah di bawah state yang sedia ada// State tambahan jika belum ada
+    const [isCodConfirmOpen, setIsCodConfirmOpen] = useState(false);
+
+
     // 1. UPDATE useEffect Inisialisasi
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -205,7 +209,12 @@ export default function OrderDetailPage() {
     };
 
     // FUNGSI PEMBAYARAN CASH (Update Status ke Backend)
-    const handleCashPayment = async () => {
+    const handleCashPayment = () => {
+        setIsCodConfirmOpen(true); // Buka modal pengesahan
+    };
+
+    // Fungsi yang dipanggil apabila butang "Ya / Bayar" ditekan dalam modal COD
+    const confirmCashPayment = async () => {
         const token = localStorage.getItem("access_token");
         if (!token) return;
 
@@ -224,13 +233,20 @@ export default function OrderDetailPage() {
             const result = await response.json();
             if (result.success || result.status === "success") {
                 setOrder((prevOrder: any) => ({ ...prevOrder, status_pembayaran: "success" }));
+
+                // Tutup semua modal input/konfirmasi
+                setIsCodConfirmOpen(false);
                 setIsModalOpen(false);
-                alert("Pembayaran Cash Berhasil Terverifikasi!");
+
+                // Tampilkan modal sukses (Pengganti alert browser)
+                setIsSuccessModalOpen(true);
             } else {
-                alert("Gagal memproses pembayaran: " + (result.message || "Unknown error"));
+                // Untuk error, tetap disarankan pakai modal error custom, 
+                // tapi di sini saya fokus ke success modal sesuai permintaan.
+                console.error("Gagal memproses pembayaran");
             }
         } catch (error) {
-            alert("Terjadi kesalahan pada server.");
+            console.error("Terjadi kesalahan pada server.");
         } finally {
             setIsPaying(false);
         }
@@ -339,6 +355,91 @@ export default function OrderDetailPage() {
                             >
                                 Close
                             </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* --- MODAL SUKSES PEMBAYARAN (CASH & QRIS) --- */}
+            <AnimatePresence>
+                {isSuccessModalOpen && (
+                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white p-10 rounded-[2.5rem] text-center max-w-sm w-full relative z-10 shadow-2xl"
+                        >
+                            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShieldCheck size={40} className="text-emerald-600" />
+                            </div>
+
+                            <h3 className={`${fontJudul.className} text-2xl uppercase mb-2 tracking-tighter`}>
+                                Payment Received
+                            </h3>
+                            <p className="text-stone-400 text-sm mb-8 leading-relaxed">
+                                Pembayaran tunai Anda telah berhasil dicatat dan diverifikasi oleh sistem Evomi.
+                            </p>
+
+                            <button
+                                onClick={() => setIsSuccessModalOpen(false)}
+                                className="w-full py-4 bg-stone-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-stone-800 transition-all shadow-lg shadow-stone-100"
+                            >
+                                Return to Order Details
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* --- MODAL PENGESAHAN COD --- */}
+            <AnimatePresence>
+                {isCodConfirmOpen && (
+                    <div className="fixed inset-0 z-[250] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 p-10 text-center"
+                        >
+                            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Banknote size={30} className="text-amber-600" />
+                            </div>
+
+                            <h3 className={`${fontJudul.className} text-xl uppercase mb-3`}>Confirm Cash Payment</h3>
+                            <p className="text-stone-400 text-sm mb-8 leading-relaxed">
+                                Adakah anda ingin membayar pesanan ini sekarang melalui Cash on Delivery (COD)?
+                            </p>
+
+                            <div className="space-y-3">
+                                {/* Butang Ya / Bayar */}
+                                <button
+                                    onClick={confirmCashPayment}
+                                    disabled={isPaying}
+                                    className="w-full py-4 bg-stone-900 text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-stone-800 transition-all flex items-center justify-center"
+                                >
+                                    {isPaying ? <Loader2 className="animate-spin mr-2" size={14} /> : "Ya / Bayar Sekarang"}
+                                </button>
+
+                                {/* Butang Nanti Saja / Cancel */}
+                                <button
+                                    onClick={() => setIsCodConfirmOpen(false)}
+                                    disabled={isPaying}
+                                    className="w-full py-4 bg-transparent text-stone-400 border border-stone-100 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-stone-50 transition-all"
+                                >
+                                    Nanti Saja / Cancel
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

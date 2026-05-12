@@ -56,7 +56,6 @@ const fontCaption = localFont({
 export default function EvomiLandingPage() {
 
   const router = useRouter();
-
   const [user, setUser] = useState<{
     id: any; email: string; name: string; username: string; image: string;
   } | null>(null);  // State untuk menyimpan data user yang login
@@ -74,7 +73,7 @@ export default function EvomiLandingPage() {
   const heroRef = useRef(null);
   const { scrollYProgress: heroScrollY } = useScroll({
     target: heroRef,
-    offset: ["start start", "end start"],
+    offset: ["start start", "end start"], // Mulai parallax saat bagian atas hero masuk viewport, dan berakhir saat bagian bawah hero mencapai bagian atas viewport
   });
 
   // Teks turun lebih lambat dari scroll (efek tertinggal)
@@ -85,6 +84,8 @@ export default function EvomiLandingPage() {
 
   // Testimonial section parallax
   const testimonialRef = useRef(null);
+
+  // scrollYProgress untuk testimonial, dengan offset yang lebih panjang agar efek parallax terasa saat masuk dan keluar section
   const { scrollYProgress: testimonialScrollY } = useScroll({
     target: testimonialRef,
     offset: ["start end", "end start"],
@@ -115,10 +116,16 @@ export default function EvomiLandingPage() {
   // Effect untuk inisialisasi
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem("access_token");
-    const savedUser = localStorage.getItem("user_data");
+    const token = localStorage.getItem("access_token"); // Cek token untuk menentukan apakah user sudah login
+    const savedUser = localStorage.getItem("user_data");  // Ambil data user yang disimpan di localStorage
     if (token && savedUser) {
-      try { setUser(JSON.parse(savedUser)); console.log("User loaded:", JSON.parse(savedUser)); } catch (error) { console.error(error); }
+      // Pastikan data user yang diambil dari localStorage valid sebelum diset ke state
+      try {
+        setUser(JSON.parse(savedUser));
+        console.log("User loaded:", JSON.parse(savedUser));
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     // Fetch products

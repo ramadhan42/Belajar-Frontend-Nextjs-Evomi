@@ -104,7 +104,7 @@ export default function AdminOrderDetail() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push('/admin/dashboard')}
+              onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ArrowLeft size={20} className="text-gray-600" />

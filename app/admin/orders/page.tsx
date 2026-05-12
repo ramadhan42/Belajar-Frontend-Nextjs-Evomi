@@ -44,7 +44,7 @@ export default function OrdersPage() {
     // Endpoint URLs
     const STATS_URL = `${BASE_URL}/api/admin/dashboard-stats`;
     const ORDER_ACTION_URL = (id: string) => `${BASE_URL}/api/admin/orders/${id}`;
-    
+
 
     useEffect(() => {
         fetchOrders();
@@ -194,7 +194,11 @@ export default function OrdersPage() {
                                     <tr><td colSpan={4} className="p-12 text-center text-gray-400">Loading orders...</td></tr>
                                 ) : currentOrders.map((order) => (
                                     <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">#{order.id}</td>
+                                        <td className="p-4 font-semibold text-gray-700">
+                                            <button onClick={() => router.push(`/admin/orders/${order.id}`)} className="hover:text-indigo-600 flex items-center gap-1">
+                                                #{order.id} <ChevronRight size={14} />
+                                            </button>
+                                        </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${order.status_pembayaran === 'success' ? 'bg-green-100 text-green-700' :
                                                 order.status_pembayaran === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
