@@ -6,7 +6,7 @@ export async function POST(request: Request) {  // Handler untuk POST request
         const body = await request.json();  // Mendapatkan body request
 
         const response = await fetch('https://api.sandbox.midtrans.com/v2/charge', {    // URL API Midtrans
-            method: 'POST',
+            method: 'POST', // Metode HTTP POST
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',

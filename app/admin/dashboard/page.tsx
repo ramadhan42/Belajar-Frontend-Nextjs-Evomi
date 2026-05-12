@@ -2,36 +2,43 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
-// Tambahkan ChevronLeft dan ChevronRight untuk navigasi
-import { User, Mail, Lock, ShieldCheck, Save, Camera, LogOut, ChevronRight, ChevronLeft, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Trash2,
+  AlertTriangle
+} from "lucide-react";
 
 // String global url
 import { BASE_URL } from "@/src/config/strings";
 
-// Admin Dashboard Page
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false); // State loading saat hapus
   const router = useRouter();
 
   // --- STATE UNTUK PAGINATION ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // Default 5 data per halaman
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
+  // --- STATE UNTUK MODAL NOTIFIKASI ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({ title: '', message: '', type: 'success' });
 
-  // Show modal
-  const showModal = (title: any, message: any, type = 'success') => {
+  // --- STATE UNTUK MODAL DELETE CUSTOM ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<any>(null);
+
+  const showModal = (title: string, message: string, type = 'success') => {
     setModalConfig({ title, message, type });
     setIsModalOpen(true);
   };
 
-  // Fetch data from API
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('admin_access_token');
-      const response = await fetch(BASE_URL + '/api/admin/dashboard-stats', { // fix bugs origin cors block dengan menghilangkan slash / pada akhir url
+      const response = await fetch(BASE_URL + '/api/admin/dashboard-stats', {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -45,15 +52,11 @@ export default function AdminDashboard() {
       }
 
       const data = await response.json();
-
       const calculatedRevenue = data.recent_orders?.reduce((acc: number, order: any) => {
         return order.status_pembayaran === 'success' ? acc + parseFloat(order.total_harga) : acc;
       }, 0) || 0;
 
-      setStats({
-        ...data,
-        total_revenue_success: calculatedRevenue
-      });
+      setStats({ ...data, total_revenue_success: calculatedRevenue });
     } catch (error) {
       console.error('Gagal mengambil data:', error);
     } finally {
@@ -65,13 +68,39 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // --- LOGIKA SLICING DATA UNTUK TABEL ---
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentOrders = stats?.recent_orders?.slice(indexOfFirstItem, indexOfLastItem) || [];
-  const totalPages = Math.ceil((stats?.recent_orders?.length || 0) / itemsPerPage);
+  // --- FUNGSI DELETE CUSTOM ---
+  const openDeleteModal = (order: any) => {
+    setOrderToDelete(order);
+    setIsDeleteModalOpen(true);
+  };
 
-  // Handle status change
+  const confirmDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    setIsDeleting(true);
+    const token = localStorage.getItem('admin_access_token');
+    try {
+      const response = await fetch(BASE_URL + `/api/admin/orders/${orderToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setIsDeleteModalOpen(false);
+        showModal("Berhasil", `Pesanan #${orderToDelete.id} telah dihapus selamanya.`, "success");
+        await fetchData();
+      }
+    } catch (error) {
+      showModal("Error", "Gagal menghapus data dari server.", "error");
+    } finally {
+      setIsDeleting(false);
+      setOrderToDelete(null);
+    }
+  };
+
   const handleStatusChange = async (orderId: any, newStatus: string) => {
     const token = localStorage.getItem('admin_access_token');
     try {
@@ -86,34 +115,19 @@ export default function AdminDashboard() {
       });
 
       if (response.ok) {
-        showModal("Update Berhasil", `Status pesanan #${orderId} sukses diperbarui.`, "success");
+        showModal("Update Berhasil", `Status pesanan #${orderId} kini menjadi ${newStatus}.`, "success");
         await fetchData();
       }
     } catch (error) {
-      showModal("Koneksi Error", "Gagal memperbarui status.", "error");
+      showModal("Error", "Gagal memperbarui status.", "error");
     }
   };
 
-  // Handle delete order
-  const handleDeleteOrder = async (orderId: any) => {
-    const token = localStorage.getItem('admin_access_token');
-    try {
-      const response = await fetch(BASE_URL + `/api/admin/orders/${orderId}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        showModal("Pesanan Dihapus", `Data pesanan #${orderId} telah dihapus.`, "success");
-        await fetchData();
-      }
-    } catch (error) {
-      showModal("Error", "Gagal menghapus data.", "error");
-    }
-  };
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOrders = stats?.recent_orders?.slice(indexOfFirstItem, indexOfLastItem) || [];
+  const totalPages = Math.ceil((stats?.recent_orders?.length || 0) / itemsPerPage);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -121,14 +135,14 @@ export default function AdminDashboard() {
     </div>
   );
 
-  // Return dashboard
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Modal tetap sama seperti code awal Anda */}
+
+      {/* 1. MODAL NOTIFIKASI (Global) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-white rounded-3xl p-8 text-center max-w-sm w-full shadow-2xl transition-all animate-in fade-in zoom-in duration-300">
+          <div className="relative bg-white rounded-3xl p-8 text-center max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
             <h3 className="text-xl font-bold text-gray-900 mb-2">{modalConfig.title}</h3>
             <p className="text-gray-500 text-sm mb-8">{modalConfig.message}</p>
             <button onClick={() => setIsModalOpen(false)} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold">Tutup</button>
@@ -136,55 +150,72 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Main content */}
+      {/* 2. MODAL DELETE CUSTOM (Dashboard) */}
+      {isDeleteModalOpen && orderToDelete && (
+        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => !isDeleting && setIsDeleteModalOpen(false)}></div>
+          <div className="relative bg-white rounded-[2.5rem] p-10 text-center max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="text-red-500" size={40} />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Hapus Pesanan?</h3>
+            <p className="text-gray-500 text-sm mb-10 leading-relaxed">
+              Pesanan <span className="font-bold text-gray-900">#{orderToDelete.id}</span> akan dihapus permanen dari sistem. Tindakan ini tidak bisa dibatalkan.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                disabled={isDeleting}
+                onClick={confirmDeleteOrder}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold text-xs tracking-widest uppercase hover:bg-red-600 transition-all shadow-lg shadow-red-200 disabled:opacity-50"
+              >
+                {isDeleting ? "SEDANG MENGHAPUS..." : "YA, HAPUS SEKARANG"}
+              </button>
+              <button
+                disabled={isDeleting}
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="w-full py-4 text-gray-400 font-bold text-xs tracking-widest uppercase hover:text-gray-600 transition-colors"
+              >
+                BATALKAN
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-7xl mx-auto p-6 sm:p-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Ringkasan aktivitas toko Evomi hari ini.</p>
         </header>
 
-        {/* Kartu Statistik tetap sama */}
+        {/* Statistik Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium uppercase">Total Produk</p>
+          <div onClick={() => router.push('/admin/products')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
+            <div className="flex justify-between items-center"><p className="text-gray-500 text-sm font-medium uppercase">Total Produk</p><ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600" /></div>
             <h3 className="text-4xl font-extrabold text-gray-900 mt-2">{stats?.total_products || 0}</h3>
           </div>
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium uppercase">Total Pesanan</p>
+          <div onClick={() => router.push('/admin/orders')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
+            <div className="flex justify-between items-center"><p className="text-gray-500 text-sm font-medium uppercase">Total Pesanan</p><ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600" /></div>
             <h3 className="text-4xl font-extrabold text-gray-900 mt-2">{stats?.total_orders || 0}</h3>
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p className="text-gray-500 text-sm font-medium uppercase">Total Pendapatan</p>
-            <h3 className="text-4xl font-extrabold text-indigo-600 mt-2">
-              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(stats?.total_revenue_success || 0)}
-            </h3>
+            <h3 className="text-4xl font-extrabold text-indigo-600 mt-2">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(stats?.total_revenue_success || 0)}</h3>
           </div>
         </div>
 
-        {/* --- TABEL DENGAN PAGINATION CONTROL --- */}
+        {/* Tabel Recent Orders */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Header Tabel dengan Dropdown Items Per Page */}
           <div className="p-4 border-b border-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-bold text-gray-800">Recent Orders</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium">Tampilkan:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1); // Reset ke halaman 1 jika filter berubah
-                }}
-                className="text-xs border border-gray-200 rounded-lg p-1 outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
+            <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="text-xs border border-gray-200 rounded-lg p-1 outline-none">
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-gray-50/50 text-gray-600 text-xs uppercase font-bold tracking-widest">
@@ -208,20 +239,21 @@ export default function AdminDashboard() {
                         value={order.status_pembayaran || 'pending'}
                         onChange={(e) => handleStatusChange(order.id, e.target.value)}
                         className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase border-none outline-none cursor-pointer ${order.status_pembayaran === 'success' ? 'bg-green-100 text-green-700' :
-                          (order.status_pembayaran === 'failed' || order.status_pembayaran === 'expired' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')
+                            (order.status_pembayaran === 'failed' || order.status_pembayaran === 'expired' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')
                           }`}
                       >
                         <option value="pending">Pending</option>
                         <option value="success">Success</option>
-                        <option value="expired">Cancel / Expired</option>
+                        <option value="expired">Cancel/Expired</option>
                         <option value="failed">Failed</option>
                       </select>
                     </td>
-                    <td className="p-4 font-bold text-gray-900">
-                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(order.total_harga || 0)}
-                    </td>
+                    <td className="p-4 font-bold text-gray-900">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(order.total_harga || 0)}</td>
                     <td className="p-4 text-center">
-                      <button onClick={() => handleDeleteOrder(order.id)} className="p-2 text-red-500 hover:text-red-700 bg-red-50 rounded-xl transition-colors">
+                      <button
+                        onClick={() => openDeleteModal(order)} // Memanggil Modal Custom
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -231,29 +263,12 @@ export default function AdminDashboard() {
             </table>
           </div>
 
-          {/* --- FOOTER NAVIGASI (NEXT/PREV) --- */}
+          {/* Navigasi Pagination */}
           <div className="p-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/30">
-            <span className="text-xs text-gray-500">
-              Menampilkan <span className="font-bold">{indexOfFirstItem + 1}</span> - <span className="font-bold">{Math.min(indexOfLastItem, stats?.recent_orders?.length || 0)}</span> dari <span className="font-bold">{stats?.recent_orders?.length || 0}</span> data
-            </span>
+            <span className="text-xs text-gray-500">Halaman {currentPage} dari {totalPages || 1}</span>
             <div className="flex gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => prev - 1)}
-                className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <div className="flex items-center px-4 text-xs font-bold text-gray-700">
-                Halaman {currentPage} dari {totalPages || 1}
-              </div>
-              <button
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ChevronRight size={16} />
-              </button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30"><ChevronLeft size={16} /></button>
+              <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30"><ChevronRight size={16} /></button>
             </div>
           </div>
         </div>

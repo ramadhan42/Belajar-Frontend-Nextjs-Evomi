@@ -7,12 +7,13 @@ import { BASE_URL } from "@/src/config/strings";
 
 export default function AdminChatDashboard() {
 
-    const [users, setUsers] = useState<any[]>([]);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
-    const [messages, setMessages] = useState<any[]>([]);
-    const [input, setInput] = useState("");
+    // State untuk menyimpan daftar user, pesan, dan input balasan
+    const [users, setUsers] = useState<any[]>([]);  // Daftar user yang melakukan chat
+    const [selectedUser, setSelectedUser] = useState<any>(null);    // User yang sedang dipilih untuk melihat chat
+    const [messages, setMessages] = useState<any[]>([]);    // Riwayat chat dengan user yang dipilih
+    const [input, setInput] = useState("");     // Input untuk balasan admin
 
-    const API_URL = BASE_URL + "/api";
+    const API_URL = BASE_URL + "/api";  // Ganti dengan URL API kamu
 
     // 1. Ambil daftar user yang melakukan chat
     useEffect(() => {
@@ -62,6 +63,7 @@ export default function AdminChatDashboard() {
             })
         });
 
+        // Setelah mengirim pesan, ambil kembali riwayat chat untuk memperbarui tampilan
         const result = await res.json();
         if (result.success) {
             setMessages([...messages, result.data]);
@@ -139,11 +141,24 @@ export default function AdminChatDashboard() {
                         {/* Header Chat */}
                         <div className="p-5 bg-white border-b border-stone-200 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center text-[10px] font-bold">
+                                {/* Avatar */}
+                                <div className="w-9 h-9 rounded-full bg-stone-900 text-white flex items-center justify-center text-[10px] font-bold">
                                     {selectedUser.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="font-bold text-[10px] uppercase tracking-[0.2em] text-stone-800">
-                                    {selectedUser.name}
+
+                                {/* User Info Container */}
+                                <div className="flex flex-col">
+                                    <div className="font-bold text-[10px] uppercase tracking-[0.2em] text-stone-800 leading-none mb-1">
+                                        {selectedUser.name}
+                                    </div>
+
+                                    {/* Status Online/Offline Text */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={`w-1 h-1 rounded-full ${selectedUser.is_online ? 'bg-emerald-500' : 'bg-stone-300'}`}></span>
+                                        <span className={`text-[9px] uppercase tracking-widest font-medium ${selectedUser.is_online ? 'text-emerald-600' : 'text-stone-400'}`}>
+                                            {selectedUser.is_online ? 'Online' : 'Offline'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

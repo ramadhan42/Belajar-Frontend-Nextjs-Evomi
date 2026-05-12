@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // 2. Fetch Data Admin
         const fetchAdminMe = async () => {
             try {
-                const res = await fetch(BASE_URL + "/api/admin/me", {
+                const res = await fetch(BASE_URL + "/api/admin/me", {   // Ganti dengan URL yang sesuai
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'

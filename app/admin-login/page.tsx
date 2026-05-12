@@ -16,6 +16,7 @@ export default function AdminLogin() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    // Handler untuk login, menggunakan endpoint API dan metode POST sesuai referensi
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -128,6 +129,7 @@ export default function AdminLogin() {
                         </button>
                     </form>
 
+                    {/* Footer */}
                     <div className="mt-10 text-center">
                         <span className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.2em]">
                             System v4.0.2 • Verified Session

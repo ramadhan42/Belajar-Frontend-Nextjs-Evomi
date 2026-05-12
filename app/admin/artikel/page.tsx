@@ -28,6 +28,18 @@ export default function ArticlesMenu() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
 
+    // --- State untuk Pagination ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+      const goToNextPage = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    };
+
+    const goToPrevPage = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
     const [successModal, setSuccessModal] = useState({
         isOpen: false,
         message: "",
@@ -58,6 +70,21 @@ export default function ArticlesMenu() {
             setIsLoading(false);
         }
     };
+
+    // --- Logika Pagination ---
+    const totalPages = Math.ceil(articles.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = articles.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+    // Reset ke halaman 1 jika ada penghapusan/penambahan data agar tidak error
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [articles, totalPages, currentPage]);
 
     const showSuccess = (message: string, type: string) => {
         setSuccessModal({ isOpen: true, message, type });
@@ -172,6 +199,7 @@ export default function ArticlesMenu() {
         ],
     };
 
+    // Handler untuk perubahan file input, menyimpan file gambar yang dipilih
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) setImageFile(e.target.files[0]);
     };
@@ -221,20 +249,15 @@ export default function ArticlesMenu() {
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Aksi</th>
                                 </tr>
                             </thead>
-
                             <tbody className="divide-y divide-gray-50 flex flex-col md:table-row-group">
                                 {isLoading ? (
                                     <tr><td colSpan={4} className="p-10 text-center text-gray-400">Memuat Jurnal...</td></tr>
-                                ) : articles.map((article) => (
+                                ) : currentItems.map((article) => (
                                     <tr key={article.id} className="hover:bg-gray-50/50 transition-colors flex flex-col md:table-row p-4 md:p-0">
                                         <td className="px-0 py-2 md:px-6 md:py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-12 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-100">
-                                                    {article.image_url ? (
-                                                        <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400 uppercase">Cover</div>
-                                                    )}
+                                                    {article.image_url ? <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">Cover</div>}
                                                 </div>
                                                 <div className="overflow-hidden">
                                                     <div className="text-sm font-bold text-gray-900 truncate max-w-[200px] md:max-w-xs">{article.title}</div>
@@ -248,20 +271,52 @@ export default function ArticlesMenu() {
                                         </td>
                                         <td className="px-0 py-2 md:px-6 md:py-4">
                                             <span className="md:hidden text-[9px] font-bold text-gray-400 uppercase mb-1 block">Terbit Pada</span>
-                                            <div className="text-xs text-gray-400">
-                                                {new Date(article.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                            </div>
+                                            <div className="text-xs text-gray-400">{new Date(article.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                                         </td>
                                         <td className="px-0 py-4 md:px-6 md:py-4 border-t md:border-t-0 mt-2 md:mt-0 pt-4 md:pt-4">
                                             <div className="flex items-center justify-end gap-4 md:gap-3">
-                                                <button onClick={() => openEditModal(article)} className="flex-1 md:flex-none py-2 md:py-0 bg-indigo-50 md:bg-transparent text-indigo-600 hover:text-indigo-800 text-xs font-bold rounded-lg transition-all">Edit</button>
-                                                <button onClick={() => handleDelete(article.id)} className="flex-1 md:flex-none py-2 md:py-0 bg-red-50 md:bg-transparent text-red-500 hover:text-red-700 text-xs font-bold rounded-lg transition-all">Hapus</button>
+                                                <button onClick={() => openEditModal(article)} className="text-indigo-600 hover:text-indigo-800 text-xs font-bold transition-all">Edit</button>
+                                                <button onClick={() => handleDelete(article.id)} className="text-red-500 hover:text-red-700 text-xs font-bold transition-all">Hapus</button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* --- FOOTER PAGINATION --- */}
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                        <div className="text-xs text-gray-500 font-medium">
+                            Menampilkan <span className="text-black font-bold">{indexOfFirstItem + 1}</span> - <span className="text-black font-bold">{Math.min(indexOfLastItem, articles.length)}</span> dari <span className="text-black font-bold">{articles.length}</span> artikel
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={goToPrevPage}
+                                disabled={currentPage === 1}
+                                className="p-2 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs font-bold px-3 py-1 bg-black text-white rounded-md">{currentPage}</span>
+                                <span className="text-xs text-gray-400 mx-1">dari</span>
+                                <span className="text-xs font-bold text-gray-600">{totalPages || 1}</span>
+                            </div>
+
+                            <button
+                                onClick={goToNextPage}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className="p-2 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -9,6 +9,8 @@ import { motion, Variants, AnimatePresence } from "framer-motion";
 // String global url
 import { BASE_URL, HARGA_EVOMI, HARGA_ONGKIR } from "@/src/config/strings";
 
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
+
 // --- Animasi Variants ---
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -19,7 +21,7 @@ const fadeInUp: Variants = {
   }
 };
 
-// 
+// Stagger container untuk animasi anak-anaknya
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -37,6 +39,7 @@ const fontJudul = localFont({
   display: "swap",
 });
 
+// Font untuk deskripsi dan teks biasa
 const fontCaption = localFont({
   src: "./../fonts/Nohemi-Regular.otf",
   variable: "--font-body",
@@ -77,9 +80,17 @@ const ProductCard = ({ parfum }: { parfum: any }) => {
         <h3 className={`${fontJudul.className} text-base md:text-xl text-stone-800 uppercase leading-snug line-clamp-1 group-hover:text-amber-800 transition-colors`}>
           {parfum.nama}
         </h3>
+
+        {/* Bagian deskripsi yang sudah dimodifikasi */}
         <p className="text-[10px] text-stone-500 italic line-clamp-1 px-4">
-          {parfum.deskripsi}
+          {parfum.deskripsi
+            ? parfum.deskripsi
+              .replace(/<[^>]*>?/gm, '')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&amp;/g, '&')
+            : ''}
         </p>
+
         <p className="text-stone-700 font-medium text-[11px] md:text-sm tracking-wide pt-2">
           Rp {Number(parfum.harga_retail).toLocaleString("id-ID")}
         </p>
@@ -88,6 +99,7 @@ const ProductCard = ({ parfum }: { parfum: any }) => {
   );
 };
 
+// Halaman utama untuk menampilkan produk
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +108,87 @@ export default function ProductsPage() {
   // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 4; // Menampilkan 4 produk per halaman
+
+  const [user, setUser] = useState<{
+    id: any; email: string; name: string; username: string; image: string;
+  } | null>(null);
+
+  // 1. Inisialisasi: Load User Data & Mounted State
+  useEffect(() => {
+    setMounted(true);
+    const token = localStorage.getItem("access_token");
+    const savedUser = localStorage.getItem("user_data");
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error("Gagal parse user data:", error);
+      }
+    }
+  }, []);
+
+  // 2. LOGIKA STATUS: Online / Offline
+  useEffect(() => {
+    if (!user) return;
+
+    // Fungsi Set ONLINE (Menggunakan fetch biasa)
+    const setOnlineStatus = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        await fetch(`${BASE_URL}/api/user/status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ is_online: 1 })
+        });
+      } catch (err) {
+        console.error("Gagal update status online:", err);
+      }
+    };
+
+    setOnlineStatus();
+
+    // Fungsi Set OFFLINE (Menggunakan Beacon API agar tetap terkirim saat browser tutup)
+    const handleOfflineBeacon = () => {
+      const url = `${BASE_URL}/api/user/status-beacon`;
+      const data = JSON.stringify({
+        user_id: user.id,
+        is_online: 0
+      });
+      const blob = new Blob([data], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    };
+
+    // Event listener untuk menutup tab/browser
+    window.addEventListener('beforeunload', handleOfflineBeacon);
+
+    return () => {
+      // Jalankan offline beacon saat user pindah page (unmount)
+      handleOfflineBeacon();
+      window.removeEventListener('beforeunload', handleOfflineBeacon);
+    };
+  }, [user]);
+
+  // 3. Fetch Produk Data
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(BASE_URL + "/api/products", {
+          headers: { Accept: "application/json" },
+        });
+        const result = await response.json();
+        setProducts(result.data || result || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
 
   // useEffect
   useEffect(() => {
@@ -141,6 +234,9 @@ export default function ProductsPage() {
 
       {/* NAVBAR */}
       <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300">
+
+        {/* BARU: Memanggil Komponen Wavy Curve */}
+        <WavyNavbarGradient />
         <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 flex items-center justify-between">
           <Link href="/" className="hover:opacity-70 transition-opacity">
             <Image
@@ -231,11 +327,10 @@ export default function ProductsPage() {
                         <button
                           key={num}
                           onClick={() => paginate(num)}
-                          className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${
-                            currentPage === num
-                              ? "bg-stone-900 text-white shadow-lg"
-                              : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
-                          }`}
+                          className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${currentPage === num
+                            ? "bg-stone-900 text-white shadow-lg"
+                            : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
+                            }`}
                         >
                           {String(num).padStart(2, '0')}
                         </button>

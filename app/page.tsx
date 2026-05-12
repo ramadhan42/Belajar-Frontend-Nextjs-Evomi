@@ -1,21 +1,22 @@
 "use client";
 
 // React & Next
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import localFont from "next/font/local";
 import { useRouter } from "next/navigation";
 import { SocialIcon } from 'react-social-icons'
 
 // ... import lainnya
 import QuizModal from "@/components/QuizModal";
-import ImageCarousel from "@/components/ImageCarousel";
-import { useState, useEffect, useRef } from "react";
 
 // Tambahkan import ChatModal di bagian atas
 import ChatModal from "@/components/ChatModal";
-import { motion, Variants, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { BASE_URL } from "@/src/config/strings";
+import { useState, useEffect, useRef } from "react";
+import ImageCarousel from "@/components/ImageCarousel";
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
+import { motion, Variants, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 // --- Animasi Variants ---
 const fadeInUp: Variants = {
@@ -27,7 +28,7 @@ const fadeInUp: Variants = {
   }
 };
 
-// 
+// Stagger Container
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -52,16 +53,89 @@ const fontCaption = localFont({
   display: "swap",
 });
 
+// =========================================================================
+// --- UPDATE: Seamless Looping Wavy Curve (Ukuran Lebih Kecil/Tipis) ---
+// =========================================================================
+// const WavyNavbarGradient = () => (
+//   <div className="absolute inset-x-0 bottom-0 h-6 overflow-hidden -mb-px z-10 pointer-events-none">
+//     <svg
+//       viewBox="0 0 1440 120"
+//       fill="none"
+//       xmlns="http://www.w3.org/2000/svg"
+//       className="absolute bottom-0 w-[200%] h-full animate-wave-horizontal"
+//       preserveAspectRatio="none"
+//     >
+//       <motion.path
+//         animate={{
+//           d: [
+//             // Posisi Start: Amplitudo diperkecil (range Y 70-90)
+//             "M0,80 C240,95 480,65 720,80 C960,95 1200,65 1440,80 L1440,120 L0,120 Z",
+//             // Posisi Tengah: Lekukan berbalik secara halus
+//             "M0,80 C240,65 480,95 720,80 C960,65 1200,95 1440,80 L1440,120 L0,120 Z",
+//             // Posisi End: Kembali ke posisi awal agar loop tidak patah
+//             "M0,80 C240,95 480,65 720,80 C960,95 1200,65 1440,80 L1440,120 L0,120 Z"
+//           ]
+//         }}
+//         transition={{
+//           duration: 10, // Durasi sedikit diperlambat agar lebih tenang
+//           ease: "easeInOut",
+//           repeat: Infinity,
+//         }}
+//         fill="url(#waveGradient)"
+//       />
+
+//       {/* Path kedua sebagai penyambung horizontal */}
+//       <motion.path
+//         animate={{
+//           d: [
+//             "M1440,80 C1680,95 1920,65 2160,80 C2400,95 2640,65 2880,80 L2880,120 L1440,120 Z",
+//             "M1440,80 C1680,65 1920,95 2160,80 C2400,65 2640,95 2880,80 L2880,120 L1440,120 Z",
+//             "M1440,80 C1680,95 1920,65 2160,80 C2400,95 2640,65 2880,80 L2880,120 L1440,120 Z"
+//           ]
+//         }}
+//         transition={{
+//           duration: 10,
+//           ease: "easeInOut",
+//           repeat: Infinity,
+//         }}
+//         fill="url(#waveGradient)"
+//       />
+
+//       <defs>
+//         <linearGradient id="waveGradient" x1="0" y1="0" x2="1" y2="0">
+//           <stop offset="0%" stopColor="#005fa3" />
+//           <stop offset="50%" stopColor="#ffffff" stopOpacity="0.8" />
+//           <stop offset="100%" stopColor="#0071bc" />
+//         </linearGradient>
+//       </defs>
+//     </svg>
+
+//     <style jsx global>{`
+//       @keyframes wave-move-seamless {
+//         0% { transform: translateX(0); }
+//         100% { transform: translateX(-50%); }
+//       }
+//       .animate-wave-horizontal {
+//         animation: wave-move-seamless 20s linear infinite; /* Gerakan horizontal lebih lambat */
+//       }
+//     `}</style>
+//   </div>
+// );
+// =========================================================================
+
 // Component utama
 export default function EvomiLandingPage() {
 
   const router = useRouter();
-  const [user, setUser] = useState<{ email: string; name: string; username: string; image: string; } | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const [mounted, setMounted] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [user, setUser] = useState<{
+    id: any; email: string; name: string; username: string; image: string;
+  } | null>(null);  // State untuk menyimpan data user yang login
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);  // State untuk menu dropdown user
+  const [products, setProducts] = useState<any[]>([]);  // State untuk menyimpan data produk yang di-fetch
+  const [mounted, setMounted] = useState(false);  // State untuk memastikan komponen sudah mount sebelum render (untuk menghindari masalah SSR)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);  // State untuk menu mobile
+  const [isQuizOpen, setIsQuizOpen] = useState(false);  // State untuk membuka/menutup modal quiz
 
   // Di dalam component EvomiLandingPage(), tambahkan state ini di bawah state isQuizOpen:
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -70,7 +144,7 @@ export default function EvomiLandingPage() {
   const heroRef = useRef(null);
   const { scrollYProgress: heroScrollY } = useScroll({
     target: heroRef,
-    offset: ["start start", "end start"],
+    offset: ["start start", "end start"], // Mulai parallax saat bagian atas hero masuk viewport, dan berakhir saat bagian bawah hero mencapai bagian atas viewport
   });
 
   // Teks turun lebih lambat dari scroll (efek tertinggal)
@@ -79,7 +153,10 @@ export default function EvomiLandingPage() {
   // Background turun sedikit agar terlihat berdimensi
   const heroBgY = useTransform(heroScrollY, [0, 1], ["0%", "20%"]);
 
+  // Testimonial section parallax
   const testimonialRef = useRef(null);
+
+  // scrollYProgress untuk testimonial, dengan offset yang lebih panjang agar efek parallax terasa saat masuk dan keluar section
   const { scrollYProgress: testimonialScrollY } = useScroll({
     target: testimonialRef,
     offset: ["start end", "end start"],
@@ -96,8 +173,10 @@ export default function EvomiLandingPage() {
     { tagline: "Unisex & Long Lasting", title: "CRAFTED", desc: "Ketahanan aroma hingga 12 jam lebih." },
   ];
 
+  // State untuk slide hero
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Effect untuk auto-slide hero
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -108,10 +187,16 @@ export default function EvomiLandingPage() {
   // Effect untuk inisialisasi
   useEffect(() => {
     setMounted(true);
-    const token = localStorage.getItem("access_token");
-    const savedUser = localStorage.getItem("user_data");
+    const token = localStorage.getItem("access_token"); // Cek token untuk menentukan apakah user sudah login
+    const savedUser = localStorage.getItem("user_data");  // Ambil data user yang disimpan di localStorage
     if (token && savedUser) {
-      try { setUser(JSON.parse(savedUser)); console.log("User loaded:", JSON.parse(savedUser)); } catch (error) { console.error(error); }
+      // Pastikan data user yang diambil dari localStorage valid sebelum diset ke state
+      try {
+        setUser(JSON.parse(savedUser));
+        console.log("User loaded:", JSON.parse(savedUser));
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     // Fetch products
@@ -124,6 +209,61 @@ export default function EvomiLandingPage() {
     };
     fetchProducts();
   }, []);
+
+  // Tambahkan di dalam komponen EvomiLandingPage()
+  // Status user online / offline, saat user menutup browser
+  useEffect(() => {
+    if (!user) return;
+
+    // 1. Set status ONLINE saat masuk halaman
+    const setStatus = async (status: number) => {
+      try {
+        await fetch(`${BASE_URL}/api/user/status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          },
+          body: JSON.stringify({ is_online: status })
+        });
+      } catch (err) {
+        console.error("Gagal update status:", err);
+      }
+    };
+
+    setStatus(1); // Set Online
+
+    // 2. Set status OFFLINE saat browser ditutup
+    const handleVisibilityChange = () => {
+      // navigator.sendBeacon tetap berjalan meskipun tab sudah tertutup
+      if (document.visibilityState === 'hidden') {
+        const url = `${BASE_URL}/api/user/status-beacon`;
+        const data = JSON.stringify({
+          user_id: user.id, // Pastikan user object punya ID
+          is_online: 0
+        });
+        const blob = new Blob([data], { type: 'application/json' });
+        navigator.sendBeacon(url, blob);
+      }
+    };
+
+    // Kita gunakan beforeunload untuk browser close
+    const handleUnload = () => {
+      const url = `${BASE_URL}/api/user/status-beacon`;
+      const data = JSON.stringify({ user_id: user.id, is_online: 0 });
+      const blob = new Blob([data], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    };
+
+    // Event untuk tab visibility change (pindah tab) dan browser close
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      // Pastikan status OFFLINE saat komponen unmount (misal user logout atau pindah halaman)
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [user]);
+
 
   // Handle logout
   const handleLogout = async () => {
@@ -145,6 +285,7 @@ export default function EvomiLandingPage() {
     setIsMobileMenuOpen(false);
   };
 
+  // Component untuk section divider (garis pembatas antar section)
   const SectionDivider = () => (
     <div className="max-w-7xl mx-auto px-6 md:px-8">
       <motion.div
@@ -157,7 +298,7 @@ export default function EvomiLandingPage() {
     </div>
   );
 
-  // 
+  // Mobile Menu Vars
   const mobileMenuVars: Variants = {
     hidden: { opacity: 0, height: 0 },
     visible: {
@@ -177,6 +318,7 @@ export default function EvomiLandingPage() {
     }
   };
 
+  // Item Vars untuk menu mobile
   const itemVars: Variants = {
     hidden: { opacity: 0, x: -10 },
     visible: { opacity: 1, x: 0 }
@@ -219,25 +361,30 @@ export default function EvomiLandingPage() {
       {/* Render Komponen Modal Chat */}
       <ChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
-
       {/* Komponen Modal */}
       <QuizModal isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
 
       <div className="min-h-screen bg-[#FBFBF9] text-stone-900 font-sans antialiased">
 
-        {/* NAVBAR */}
-        <nav className="fixed w-full z-[100] bg-[#0071bc]/95 backdrop-blur-xl border-b border-white/10 shadow-lg transition-all duration-300">
-          <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 flex items-center justify-between">
+        {/* ========================================================================= */}
+        {/* NAVBAR: Modifikasi untuk Menambahkan Wavy Animated Gradient */}
+        {/* ========================================================================= */}
+        <nav className="fixed w-full z-[100] bg-[#0071bc]/95 backdrop-blur-xl border-b border-white/10 shadow-lg transition-all duration-300 overflow-visible">
 
-            {/* Logo Section */}
-            <div className="flex-1 md:w-1/2 flex justify-start">
+          {/* BARU: Memanggil Komponen Wavy Curve */}
+          <WavyNavbarGradient />
+
+          <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 flex items-center justify-between relative z-20"> {/* Tambahkan relative z-20 agar konten navbar di atas wave */}
+
+            {/* Logo Section tetap sama */}
+            <div className="flex-1 md:w-1/2 flex justify-start relative z-10">
               <Link href="/" className="hover:opacity-70 transition-opacity">
                 <Image src="/img/Logo Evomi.png" alt="Evomi Logo" width={90} height={36} className="brightness-0 invert drop-shadow-sm" />
               </Link>
             </div>
 
-            {/* Desktop Menu Section */}
-            <div className={`hidden md:flex w-1/2 justify-center items-center space-x-10 ${fontJudul.className} text-[13px] tracking-[0.2em] uppercase text-white`}>
+            {/* Desktop Menu Section tetap sama */}
+            <div className={`hidden md:flex w-1/2 justify-center items-center space-x-10 ${fontJudul.className} text-[13px] tracking-[0.2em] uppercase text-white relative z-10`}>
               <a href="#about" className="hover:text-blue-200 transition-colors">About</a>
               <a href="#product" className="hover:text-blue-200 transition-colors">Collection</a>
               <Link href="/produk" className="hover:text-blue-200 transition-colors">Shop</Link>
@@ -245,13 +392,12 @@ export default function EvomiLandingPage() {
               <Link href="/artikel" className="hover:text-blue-200 transition-colors">Artikel</Link>
             </div>
 
-            {/* Right Actions (Desktop & Trigger Mobile) */}
-            <div className="flex-1 md:w-1/3 flex justify-end items-center space-x-4">
-              {/* User Desktop Menu */}
+            {/* Right Actions tetap sama */}
+            <div className="flex-1 md:w-1/3 flex justify-end items-center space-x-4 relative z-10">
               <div className="hidden md:flex items-center space-x-6">
                 {user ? (
                   <div className="relative">
-                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="flex items-center space-x-3 border border-white/30 rounded-full p-1 pr-4 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm">
+                    <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="flex items-center space-x-3 border border-white/30 rounded-full p-1 pr-4 bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm relative z-10">
                       <div className="w-8 h-8 rounded-full bg-white text-[#0071bc] flex items-center justify-center text-[10px] font-bold uppercase overflow-hidden">
                         {user.image !== 'default-avatar.png' ? (
                           <img src={BASE_URL + `/storage/profiles/${user.image}`} alt="Profile" className="w-full h-full object-cover" />
@@ -261,7 +407,7 @@ export default function EvomiLandingPage() {
                     </button>
                     <AnimatePresence>
                       {isMenuOpen && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-blue-50 py-2 z-50 overflow-hidden">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-blue-50 py-2 z-[110] overflow-hidden">
                           <Link href="/profile" className="block px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-800 hover:bg-blue-50">Profile</Link>
                           <Link href="/orders" className="block px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-800 hover:bg-blue-50">Orders</Link>
                           <hr className="border-blue-50 my-1" />
@@ -271,15 +417,14 @@ export default function EvomiLandingPage() {
                     </AnimatePresence>
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-6 relative z-10">
                     <Link href="/login" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:text-blue-100">Login</Link>
                     <Link href="/register" className="text-[10px] font-bold uppercase tracking-[0.2em] text-white hover:text-blue-100">Register</Link>
                   </div>
                 )}
               </div>
 
-              {/* Mobile Menu Trigger */}
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-white hover:text-blue-100 focus:outline-none">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-white hover:text-blue-100 focus:outline-none relative z-10">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />) : (<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />)}
                 </svg>
@@ -287,24 +432,13 @@ export default function EvomiLandingPage() {
             </div>
           </div>
 
-          {/* MOBILE DROPDOWN MENU */}
+          {/* MOBILE DROPDOWN MENU tetap sama */}
           <AnimatePresence>
             {isMobileMenuOpen && (
-              <motion.div
-                variants={mobileMenuVars}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="md:hidden bg-[#0071bc] border-t border-white/10 overflow-hidden"
-              >
+              <motion.div variants={mobileMenuVars} initial="hidden" animate="visible" exit="exit" className="md:hidden bg-[#0071bc] border-t border-white/10 overflow-hidden relative z-50">
                 <div className="px-8 py-10 flex flex-col space-y-8">
-                  {/* Main Navigation */}
                   <div className="space-y-6">
-                    {[
-                      { name: "About", href: "#about" },
-                      { name: "Collection", href: "#product" },
-                      { name: "Shop", href: "/produk" },
-                    ].map((link) => (
+                    {[{ name: "About", href: "#about" }, { name: "Collection", href: "#product" }, { name: "Shop", href: "/produk" }].map((link) => (
                       <motion.div key={link.name} variants={itemVars}>
                         <Link href={link.href} onClick={() => setIsMobileMenuOpen(false)} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
                           {link.name}
@@ -316,7 +450,6 @@ export default function EvomiLandingPage() {
                         Quiz
                       </button>
                     </motion.div>
-                    {/* Tambahkan baris ini */}
                     <motion.div variants={itemVars}>
                       <Link href="/artikel" onClick={() => setIsMobileMenuOpen(false)} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
                         Artikel
@@ -324,15 +457,12 @@ export default function EvomiLandingPage() {
                     </motion.div>
                   </div>
 
-                  {/* User Section for Mobile */}
-                  <motion.div variants={itemVars} className="pt-8 border-t border-white/10">
+                  <motion.div variants={itemVars} className="pt-8 border-t border-white/10 relative z-10">
                     {user ? (
                       <div className="space-y-6">
                         <div className="flex items-center space-x-4">
                           <div className="w-10 h-10 rounded-full bg-white text-[#0071bc] flex items-center justify-center font-bold">
-                            {user.image !== 'default-avatar.png' ? (
-                              <img src={BASE_URL + `/storage/profiles/${user.image}`} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                            ) : (user.name.charAt(0))}
+                            {user.image !== 'default-avatar.png' ? (<img src={BASE_URL + `/storage/profiles/${user.image}`} alt="Profile" className="w-full h-full object-cover rounded-full" />) : (user.name.charAt(0))}
                           </div>
                           <span className="text-white font-bold tracking-widest uppercase">{user.username}</span>
                         </div>
@@ -340,7 +470,7 @@ export default function EvomiLandingPage() {
                           <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 bg-white/10 rounded-xl text-[10px] font-bold uppercase text-white text-center">Profile</Link>
                           <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 bg-white/10 rounded-xl text-[10px] font-bold uppercase text-white text-center">Orders</Link>
                         </div>
-                        <button onClick={handleLogout} className="w-full py-3 border border-red-400/50 rounded-xl text-[10px] font-bold uppercase text-red-300">Logout</button>
+                        <button onClick={handleLogout} className="w-full py-3 border border-red-400/50 rounded-xl text-[10px] font-bold uppercase text-red-300 relative z-10">Logout</button>
                       </div>
                     ) : (
                       <div className="flex flex-col space-y-4">
@@ -371,7 +501,7 @@ export default function EvomiLandingPage() {
                 <p className="text-stone-400 tracking-[0.5em] uppercase text-xl font-semibold">
                   {heroSlides[currentSlide].tagline}
                 </p>
-                <h1 className={`${fontJudul.className} text-6xl md:text-[160px] uppercase text-stone-900 drop-shadow-sm`}>
+                <h1 className={`${fontJudul.className} text-4xl md:text-[130px] uppercase text-stone-900 drop-shadow-sm`}>
                   {heroSlides[currentSlide].title}
                 </h1>
                 <p className="text-stone-500 italic max-w-xl mx-auto text-xl md:text-base">
@@ -467,6 +597,8 @@ export default function EvomiLandingPage() {
         {/* PRODUCT GRID */}
         <section id="product" className="relative py-20 md:py-32 px-4 md:px-8 bg-white border-y border-stone-100 shadow-[0_0_50px_rgba(0,0,0,0.02)] z-20">
           <div className="max-w-7xl mx-auto">
+
+            {/* Judul Produk */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -482,6 +614,7 @@ export default function EvomiLandingPage() {
               </div>
             </motion.div>
 
+            {/* Product Grid */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -511,7 +644,6 @@ export default function EvomiLandingPage() {
             </motion.div>
           </div>
         </section>
-
 
         {/* STATS SECTION */}
         <section className="relative py-20 md:py-28 bg-[#FBFBF9] px-6 text-center z-20">

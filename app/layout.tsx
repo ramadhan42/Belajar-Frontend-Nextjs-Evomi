@@ -24,17 +24,21 @@ const bodyFont = localFont({
   variable: "--font-body",
 });
 
-// 
+// ----------------------------------
+// Konfigurasi Font Google, Geist Sans & Mono
+// ----------------------------------
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
+// Jika kamu ingin menggunakan Geist Mono, kamu bisa mengaktifkan baris berikut
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
+// Metadata untuk SEO dan informasi dasar situs
 export const metadata: Metadata = {
   title: "Evomi",
   description: "Deskripsi Evomi",

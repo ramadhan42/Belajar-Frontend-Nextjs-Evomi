@@ -31,7 +31,7 @@ export default function UserProfilePage() {
   const fetchUserData = async () => { // fetch user data
     const token = localStorage.getItem("admin_access_token");
     try {
-      const res = await fetch(BASE_URL + "/api/admin/me", {
+      const res = await fetch(BASE_URL + "/api/admin/me", {   // API endpoint untuk mendapatkan data admin yang sedang login
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json"

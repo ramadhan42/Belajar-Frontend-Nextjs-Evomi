@@ -7,8 +7,10 @@ import localFont from "next/font/local";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
+
 // String global url
-import { BASE_URL } from "@/src/config/strings";
+import { BASE_URL, HARGA_ONGKIR } from "@/src/config/strings";
 
 // --- Animasi Variants ---
 const fadeInUp = {
@@ -55,6 +57,7 @@ interface CartItem {
 
 // Interface untuk profil user
 interface UserProfile {
+    id: any;
     name: string;
     email: string;
     phone?: string;
@@ -72,6 +75,49 @@ export default function CheckoutPage() {
     const [error, setError] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
+
+    // 2. LOGIKA STATUS: Online / Offline (Beacon API)
+    useEffect(() => {
+        if (!user || !user.id) return;
+
+        // Fungsi Set ONLINE
+        const setOnlineStatus = async () => {
+            try {
+                const token = localStorage.getItem("access_token");
+                await fetch(`${BASE_URL}/api/user/status`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ is_online: 1 })
+                });
+            } catch (err) {
+                console.error("Gagal update status online:", err);
+            }
+        };
+
+        setOnlineStatus();
+
+        // Fungsi Beacon untuk Set OFFLINE (Saat tab ditutup)
+        const handleOfflineBeacon = () => {
+            const url = `${BASE_URL}/api/user/status-beacon`;
+            const data = JSON.stringify({
+                user_id: user.id,
+                is_online: 0
+            });
+            const blob = new Blob([data], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        };
+
+        window.addEventListener('beforeunload', handleOfflineBeacon);
+
+        return () => {
+            // Jalankan saat pindah halaman
+            handleOfflineBeacon();
+            window.removeEventListener('beforeunload', handleOfflineBeacon);
+        };
+    }, [user]);
 
     // Fungsi untuk mengambil data
     const fetchData = async () => {
@@ -121,8 +167,8 @@ export default function CheckoutPage() {
         // Set state untuk menampilkan loading
         setIsSubmitting(true);
         const orderData = {
-            total_harga: subtotal + 100,
-            ongkos_kirim: 100,
+            total_harga: subtotal + HARGA_ONGKIR,
+            ongkos_kirim: HARGA_ONGKIR,
             alamat_pengiriman: shippingAddress,
             catatan_pengiriman: catatan,
             kurir: "Reguler (COD)",
@@ -155,7 +201,7 @@ export default function CheckoutPage() {
     };
 
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const shipping = 100; //<<== ongkos kirim
+    const shipping = HARGA_ONGKIR;
     const total = subtotal + shipping;
 
     if (loading) return (
@@ -200,6 +246,9 @@ export default function CheckoutPage() {
             </AnimatePresence>
 
             <nav className="fixed w-full z-[100] bg-[#0071bc] backdrop-blur-xl border-b border-white/5 h-20 flex items-center justify-between px-8">
+
+                {/* BARU: Memanggil Komponen Wavy Curve */}
+                <WavyNavbarGradient />
                 <Link href="/profile" className="text-white/60 hover:text-white transition-colors">
                     <ArrowLeft size={20} />
                 </Link>

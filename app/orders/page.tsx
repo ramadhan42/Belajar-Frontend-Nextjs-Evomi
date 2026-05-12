@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import localFont from "next/font/local";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
 import { ChevronRight, Package, Calendar, Tag } from "lucide-react";
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
 
 // String global url
 import { BASE_URL } from "@/src/config/strings";
@@ -52,6 +53,7 @@ export default function OrderHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    // 1. EFFECT AWAL: Cek Auth & Load User Data
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         const savedUser = localStorage.getItem("user_data");
@@ -83,10 +85,70 @@ export default function OrderHistoryPage() {
         fetchOrders();
     }, [router]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user_data");
-        router.push("/");
+    // 2. TAMBAHKAN INI: Logika Status Online / Offline (Beacon API)
+    useEffect(() => {
+        if (!user) return;
+
+        // Fungsi untuk set Online saat masuk page
+        const setOnlineStatus = async () => {
+            try {
+                await fetch(`${BASE_URL}/api/user/status`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+                    },
+                    body: JSON.stringify({ is_online: 1 })
+                });
+            } catch (err) {
+                console.error("Gagal update status online:", err);
+            }
+        };
+
+        setOnlineStatus();
+
+        // Fungsi Beacon untuk set Offline (saat browser tutup/pindah)
+        const handleOfflineBeacon = () => {
+            const url = `${BASE_URL}/api/user/status-beacon`;
+            const data = JSON.stringify({
+                user_id: user.id,
+                is_online: 0
+            });
+            const blob = new Blob([data], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        };
+
+        // Event listener browser
+        window.addEventListener('beforeunload', handleOfflineBeacon);
+
+        return () => {
+            // Jalankan saat pindah halaman/unmount
+            handleOfflineBeacon();
+            window.removeEventListener('beforeunload', handleOfflineBeacon);
+        };
+    }, [user]);
+
+    // 3. UPDATE: Fungsi Logout dengan penambahan status offline
+    const handleLogout = async () => {
+        try {
+            // Set offline secara eksplisit saat logout
+            const token = localStorage.getItem("access_token");
+            await fetch(`${BASE_URL}/api/user/status`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ is_online: 0 })
+            });
+        } catch (err) {
+            console.error("Logout status error:", err);
+        } finally {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("user_data");
+            setUser(null);
+            router.push("/");
+        }
     };
 
     const getStatusStyle = (status: string) => {
@@ -103,6 +165,9 @@ export default function OrderHistoryPage() {
 
             {/* NAVBAR - Premium Dark Glassmorphism */}
             <nav className="fixed w-full z-[100] bg-[#0071bc]/90 backdrop-blur-xl border-b border-white/10 shadow-sm">
+
+                {/* BARU: Memanggil Komponen Wavy Curve */}
+                <WavyNavbarGradient />
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="hover:opacity-70 transition-opacity">
                         <Image
@@ -144,6 +209,7 @@ export default function OrderHistoryPage() {
                 <div className="absolute bottom-10 right-[-5%] w-[30rem] h-[30rem] bg-amber-100/30 rounded-full blur-[100px]"></div>
             </div>
 
+            {/* MAIN CONTENT */}
             <main className="pt-40 pb-24 px-6 max-w-5xl mx-auto">
                 {/* HEADER */}
                 <header className="mb-16">
@@ -245,6 +311,7 @@ export default function OrderHistoryPage() {
                 )}
             </main>
 
+            {/* Footer */}
             <footer className="py-12 text-center">
                 <p className="text-[9px] text-stone-300 uppercase tracking-[0.4em] font-bold">Evomi Fragrance House • Jakarta</p>
             </footer>

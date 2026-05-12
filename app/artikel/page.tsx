@@ -14,6 +14,8 @@ import QuizModal from "@/components/QuizModal";
 import ChatModal from "@/components/ChatModal";
 import { BASE_URL } from "@/src/config/strings";
 
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
+
 // --- Animasi Variants ---
 const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
@@ -69,7 +71,9 @@ export default function ArtikelPage() {
 
     // States untuk Navbar & Global
     const [mounted, setMounted] = useState(false);
-    const [user, setUser] = useState<{ email: string; name: string; username: string; image: string; } | null>(null);
+    const [user, setUser] = useState<{
+        id: any; email: string; name: string; username: string; image: string;
+    } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isQuizOpen, setIsQuizOpen] = useState(false);
@@ -121,6 +125,100 @@ export default function ArtikelPage() {
         fetchArticles();
     }, []);
 
+    // 1. Inisialisasi: Load User Data & Mounted State
+    useEffect(() => {
+        setMounted(true);
+        const token = localStorage.getItem("access_token");
+        const savedUser = localStorage.getItem("user_data");
+        if (token && savedUser) {
+            try {
+                setUser(JSON.parse(savedUser));
+            } catch (error) {
+                console.error("Gagal load user:", error);
+            }
+        }
+    }, []);
+
+    // 2. LOGIKA STATUS: Online / Offline (Beacon API)
+    useEffect(() => {
+        if (!user) return;
+
+        // Fungsi Set ONLINE saat masuk halaman
+        const setOnlineStatus = async () => {
+            try {
+                const token = localStorage.getItem("access_token");
+                await fetch(`${BASE_URL}/api/user/status`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ is_online: 1 })
+                });
+            } catch (err) {
+                console.error("Gagal update status online:", err);
+            }
+        };
+
+        setOnlineStatus();
+
+        // Fungsi Beacon untuk Set OFFLINE (Sangat stabil untuk tutup tab/browser)
+        const handleOfflineBeacon = () => {
+            const url = `${BASE_URL}/api/user/status-beacon`;
+            const data = JSON.stringify({
+                user_id: user.id,
+                is_online: 0
+            });
+            const blob = new Blob([data], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        };
+
+        // Event listener untuk menutup tab/browser
+        window.addEventListener('beforeunload', handleOfflineBeacon);
+
+        return () => {
+            // Jalankan offline beacon saat user pindah page (unmount komponen)
+            handleOfflineBeacon();
+            window.removeEventListener('beforeunload', handleOfflineBeacon);
+        };
+    }, [user]);
+
+    // 3. UPDATE: Fungsi Logout agar set Offline terlebih dahulu
+    const handleLogout = async () => {
+        try {
+            const token = localStorage.getItem("access_token");
+
+            // Set status offline di DB sebelum hapus token
+            await fetch(`${BASE_URL}/api/user/status`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ is_online: 0 })
+            });
+
+            // Panggil API logout bawaan
+            await fetch(BASE_URL + "/api/logout", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+            });
+        } catch (err) {
+            console.error("Logout error", err);
+        } finally {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("user_data");
+            setUser(null);
+            setIsMenuOpen(false);
+            setIsMobileMenuOpen(false);
+            router.push("/");
+            router.refresh();
+        }
+    };
+
     // --- HELPER FUNCTION: Membersihkan HTML dari React Quill ---
     const getExcerpt = (htmlContent: string, maxLength: number = 120) => {
         if (!htmlContent) return "";
@@ -137,26 +235,6 @@ export default function ArtikelPage() {
         return plainText.length > maxLength
             ? plainText.substring(0, maxLength) + "..."
             : plainText;
-    };
-
-    // Handle logout
-    const handleLogout = async () => {
-        try {
-            const token = localStorage.getItem("access_token");
-            await fetch(BASE_URL + "/api/logout", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-            });
-        } catch (err) {
-            console.error("Logout error", err);
-        } finally {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("user_data");
-            setUser(null);
-            setIsMenuOpen(false);
-            router.refresh();
-        }
-        setIsMobileMenuOpen(false);
     };
 
     if (!mounted) return null;
@@ -180,6 +258,9 @@ export default function ArtikelPage() {
 
             {/* NAVBAR */}
             <nav className="fixed w-full z-[100] bg-[#0071bc]/95 backdrop-blur-xl border-b border-white/10 shadow-lg transition-all duration-300">
+
+                {/* BARU: Memanggil Komponen Wavy Curve */}
+                <WavyNavbarGradient />
                 <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 flex items-center justify-between">
                     <div className="flex-1 md:w-1/3 flex justify-start">
                         <Link href="/" className="hover:opacity-70 transition-opacity">
@@ -364,6 +445,7 @@ export default function ArtikelPage() {
                     <div className="h-[1px] w-24 bg-stone-200"></div>
 
                     <div className="flex items-center space-x-2">
+
                         {/* Prev Button */}
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
@@ -382,8 +464,8 @@ export default function ArtikelPage() {
                                     key={num}
                                     onClick={() => handlePageChange(num)}
                                     className={`w-10 h-10 rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 ${currentPage === num
-                                            ? "bg-stone-900 text-white shadow-lg"
-                                            : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
+                                        ? "bg-stone-900 text-white shadow-lg"
+                                        : "bg-transparent text-stone-400 hover:bg-stone-100 hover:text-stone-900"
                                         }`}
                                 >
                                     {String(num).padStart(2, '0')}
@@ -417,6 +499,7 @@ export default function ArtikelPage() {
                         <h2 className={`${fontJudul.className} text-3xl mb-5 tracking-widest text-stone-900`}>EVOMI</h2>
                         <p className="max-w-sm text-stone-500 text-sm font-light leading-relaxed">Menghadirkan pengalaman sensorik melalui kurasi aroma terbaik. Dedikasi pada seni artisan fragrance.</p>
                     </div>
+
                     <div className="md:col-span-3">
                         <h4 className="font-bold text-[11px] uppercase tracking-widest mb-6 text-stone-800">Contact Us</h4>
                         <ul className="text-stone-500 space-y-3 text-sm font-light">
@@ -424,6 +507,7 @@ export default function ArtikelPage() {
                             <li>Jakarta, Indonesia</li>
                         </ul>
                     </div>
+
                     <div className="md:col-span-4">
                         <h4 className="font-bold text-[11px] uppercase tracking-widest mb-6 text-stone-800">The Newsletter</h4>
                         <p className="text-stone-400 text-xs mb-4">Dapatkan akses eksklusif ke rilis terbaru kami.</p>
@@ -441,7 +525,6 @@ export default function ArtikelPage() {
                     </div>
                 </div>
             </motion.footer>
-
         </div>
     );
 }

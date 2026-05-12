@@ -5,7 +5,9 @@ export const GLOBAL_DESCRIPTION = "Ini adalah deskripsi yang dipakai di banyak h
 // Base Url
 export const BASE_URL_LOCAL = "http://127.0.0.1:8000"
 export const BASE_URL_ONLINE = "https://ramadhan.alwaysdata.net"
-export const BASE_URL = "http://127.0.0.1:8000"
+
+// Base URL yang digunakan untuk API, bisa diubah sesuai kebutuhan (local atau online)
+export const BASE_URL = BASE_URL_LOCAL
 
 export const HARGA_EVOMI = 100
 export const HARGA_ONGKIR = 100

@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import localFont from "next/font/local";
 import AddToCartButton from "@/components/AddToCartButton";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
 
 // String global url
 import { BASE_URL } from "@/src/config/strings";
@@ -21,7 +22,7 @@ const fadeInUp: Variants = {
   }
 };
 
-// 
+// Stagger container untuk animasi anak-anak
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -51,6 +52,71 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [produk, setProduk] = useState<any>(null);  // State for product data
   const [loading, setLoading] = useState(true);  // State for loading
   const [error, setError] = useState(false);  // State for error
+  const [mounted, setMounted] = useState(false);
+
+
+  const [user, setUser] = useState<{
+    id: any; email: string; name: string; username: string; image: string;
+  } | null>(null);
+
+  // 1. Inisialisasi User Data
+  useEffect(() => {
+    setMounted(true);
+    const token = localStorage.getItem("access_token");
+    const savedUser = localStorage.getItem("user_data");
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
+  // 2. Logika Status Online / Offline (DIPERBARUI)
+  useEffect(() => {
+    if (!user) return;
+
+    // Fungsi untuk update status via regular API (Online)
+    const setStatus = async (status: number) => {
+      try {
+        const token = localStorage.getItem("access_token");
+        await fetch(`${BASE_URL}/api/user/status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ is_online: status })
+        });
+      } catch (err) {
+        console.error("Gagal update status:", err);
+      }
+    };
+
+    // Set Online saat masuk halaman
+    setStatus(1);
+
+    // Fungsi Beacon untuk Set Offline (Saat browser/tab ditutup)
+    const handleOfflineBeacon = () => {
+      const url = `${BASE_URL}/api/user/status-beacon`;
+      const data = JSON.stringify({
+        user_id: user.id,
+        is_online: 0
+      });
+      const blob = new Blob([data], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    };
+
+    // Event listener untuk menutup tab/browser
+    window.addEventListener('beforeunload', handleOfflineBeacon);
+
+    return () => {
+      // Jalankan offline beacon saat user berpindah halaman (unmount komponen)
+      handleOfflineBeacon();
+      window.removeEventListener('beforeunload', handleOfflineBeacon);
+    };
+  }, [user]);
 
   useEffect(() => {
     const getDetail = async () => {
@@ -130,6 +196,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-[#0071bc] backdrop-blur-xl border-b border-white/10 px-6 py-6 flex items-center justify-between lg:px-16 shadow-lg">
+
+        {/* BARU: Memanggil Komponen Wavy Curve */}
+        <WavyNavbarGradient />
         {/* Tombol kembali disesuaikan ke warna putih */}
         <Link href="/produk" className="text-white/70 hover:text-white transition-all hover:-translate-x-1">
           <ArrowLeft size={20} />
@@ -188,9 +257,54 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </motion.div>
 
             <motion.div variants={fadeInUp} className="space-y-8 mb-12">
-              <p className="text-stone-600 text-sm leading-relaxed italic font-light border-l-2 border-stone-200 pl-6">
-                "{produk.deskripsi}"
-              </p>
+              {/* Rich Text Description Container */}
+              <div
+                className="
+                  prose prose-stone max-w-none
+                  
+                  prose-headings:font-bold
+                  prose-headings:text-stone-900
+                  prose-headings:tracking-tight
+                  prose-h1:text-2xl
+                  prose-h2:text-xl
+                  prose-h3:text-lg
+                  
+                  prose-p:text-stone-600
+                  prose-p:text-sm
+                  prose-p:leading-relaxed
+                  prose-p:font-light
+                  prose-p:mb-4
+                  prose-p:text-justify
+                  
+                  prose-strong:text-stone-900
+                  prose-strong:font-semibold
+                  
+                  prose-a:text-[#0071bc]
+                  prose-a:no-underline
+                  hover:prose-a:underline
+                  
+                  prose-ul:list-disc
+                  prose-ol:list-decimal
+                  prose-li:marker:text-stone-400
+                  prose-li:text-stone-600
+                  prose-li:text-sm
+                  
+                  prose-blockquote:border-l-2
+                  prose-blockquote:border-stone-200
+                  prose-blockquote:bg-transparent
+                  prose-blockquote:pl-6
+                  prose-blockquote:py-1
+                  prose-blockquote:text-stone-600
+                  prose-blockquote:italic
+                  prose-blockquote:font-light
+
+                  break-words
+                  overflow-hidden
+                "
+                dangerouslySetInnerHTML={{ __html: produk.deskripsi || "" }}
+              />
+
+              {/* Vibe Tags Container */}
               <div className="flex flex-wrap gap-2">
                 {produk.vibe?.split(',').map((v: string, index: number) => (
                   <motion.span

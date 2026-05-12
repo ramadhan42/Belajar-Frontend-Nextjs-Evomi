@@ -11,6 +11,8 @@ import ShoppingBag from "@/components/ShoppingBag";
 // String global url
 import { BASE_URL } from "@/src/config/strings";
 
+import WavyNavbarGradient from "@/components/WavyNavbarGradient";
+
 // --- Animasi Variants ---
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -67,6 +69,49 @@ export default function LuxuryProfilePage() {
   const [activeTab, setActiveTab] = useState("cart");  // TODO: Add discount logic here
   const [mounted, setMounted] = useState(false);  // TODO: Add discount logic here
   const router = useRouter();  // TODO: Add discount logic here
+
+  // 2. TAMBAHKAN: Logika Status Online / Offline
+  useEffect(() => {
+    if (!user) return;
+
+    // Fungsi Set ONLINE
+    const setOnlineStatus = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        await fetch(`${BASE_URL}/api/user/status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ is_online: 1 })
+        });
+      } catch (err) {
+        console.error("Gagal update status online:", err);
+      }
+    };
+
+    setOnlineStatus();
+
+    // Fungsi Beacon untuk Set OFFLINE
+    const handleOfflineBeacon = () => {
+      const url = `${BASE_URL}/api/user/status-beacon`;
+      const data = JSON.stringify({
+        user_id: user.id,
+        is_online: 0
+      });
+      const blob = new Blob([data], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    };
+
+    window.addEventListener('beforeunload', handleOfflineBeacon);
+
+    return () => {
+      // Set offline saat pindah halaman
+      handleOfflineBeacon();
+      window.removeEventListener('beforeunload', handleOfflineBeacon);
+    };
+  }, [user]);
 
   useEffect(() => { // TODO: Add discount logic here
     setMounted(true);
@@ -190,6 +235,9 @@ export default function LuxuryProfilePage() {
 
       {/* NAVBAR */}
       <nav className="fixed w-full z-[100] bg-[#0071bc] backdrop-blur-xl border-b border-white/5 shadow-sm px-8 h-20 flex items-center justify-between">
+
+        {/* BARU: Memanggil Komponen Wavy Curve */}
+        <WavyNavbarGradient />
         <Link href="/" className="hover:opacity-70 transition-opacity">
           <Image src="/img/Logo Evomi.png" alt="Evomi" width={80} height={30} className="brightness-0 invert" />
         </Link>

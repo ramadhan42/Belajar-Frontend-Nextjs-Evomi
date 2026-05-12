@@ -11,8 +11,8 @@ const quizData = [
   {
     question: "Gimana cara kamu menghabiskan waktu luang?",
     options: ["Me-time santai di rumah", "Jalan-jalan cari inspirasi", "Eksplor tempat baru yang seru", "Datang ke acara formal/networking"],
-    resultMap: { 
-      "Me-time santai di rumah": "Peaceful Calm", 
+    resultMap: {
+      "Me-time santai di rumah": "Peaceful Calm",
       "Jalan-jalan cari inspirasi": "Sweet Shy",
       "Eksplor tempat baru yang seru": "Rabel Brave",
       "Datang ke acara formal/networking": "Purpose Prestige"
@@ -21,8 +21,8 @@ const quizData = [
   {
     question: "Gaya pakaian (outfit) andalan kamu?",
     options: ["Minimalis & Clean", "Girly atau Korean Style", "Streetwear atau Edgy", "Elegant & Classy"],
-    resultMap: { 
-      "Minimalis & Clean": "Peaceful Calm", 
+    resultMap: {
+      "Minimalis & Clean": "Peaceful Calm",
       "Girly atau Korean Style": "Sweet Shy",
       "Streetwear atau Edgy": "Rabel Brave",
       "Elegant & Classy": "Purpose Prestige"
@@ -31,8 +31,8 @@ const quizData = [
   {
     question: "Vibe apa yang paling menggambarkan dirimu?",
     options: ["Tenang & Dewasa", "Ceria & Friendly", "Cool & Misterius", "Karismatik & Profesional"],
-    resultMap: { 
-      "Tenang & Dewasa": "Peaceful Calm", 
+    resultMap: {
+      "Tenang & Dewasa": "Peaceful Calm",
       "Ceria & Friendly": "Sweet Shy",
       "Cool & Misterius": "Rabel Brave",
       "Karismatik & Profesional": "Purpose Prestige"
@@ -41,8 +41,8 @@ const quizData = [
   {
     question: "Tipe wangi yang paling kamu suka?",
     options: ["Soft & Powdery", "Sweet & Gourmand", "Strong & Spicy", "Fresh & Luxury"],
-    resultMap: { 
-      "Soft & Powdery": "Peaceful Calm", 
+    resultMap: {
+      "Soft & Powdery": "Peaceful Calm",
       "Sweet & Gourmand": "Sweet Shy",
       "Strong & Spicy": "Rabel Brave",
       "Fresh & Luxury": "Purpose Prestige"
@@ -57,6 +57,7 @@ const productImages: Record<string, string> = {
   "Rabel Brave": "https://ramadhan.alwaysdata.net/storage/new products/gemini - sweet shy.png",
   "Sweet Shy": "https://ramadhan.alwaysdata.net/storage/new products/gemini - rabel brave.png"
 };
+
 
 export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [current, setCurrent] = useState(0);
@@ -113,9 +114,9 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
                 <p className="font-bold text-xl mb-8">{quizData[current].question}</p>
                 <div className="grid grid-cols-1 gap-3">
                   {quizData[current].options.map(opt => (
-                    <button 
-                      key={opt} 
-                      onClick={() => handleAnswer(opt)} 
+                    <button
+                      key={opt}
+                      onClick={() => handleAnswer(opt)}
                       className="w-full py-3 px-4 border border-stone-200 hover:bg-stone-900 hover:text-white transition-all uppercase text-[10px] tracking-widest font-bold"
                     >
                       {opt}
@@ -127,12 +128,12 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
               <div className="text-center py-6">
                 <h3 className="text-xs uppercase tracking-[0.2em] text-stone-400 mb-2">Tipe Kamu Adalah</h3>
                 <h2 className="text-3xl font-bold mb-6 text-stone-900">{finalResult}</h2>
-                
-                {/* Image Produk Dinamis */}
+
+                {/* Sisipkan Gambar Maskot di Sini */}
                 {/* <div className="relative w-48 h-48 mx-auto mb-6 drop-shadow-xl">
                   <Image
-                    src={productImages[finalResult]}
-                    alt={finalResult}
+                    src="http://127.0.0.1:8000/storage/quiz-poster/cloud.png" // Menggunakan path gambar yang baru
+                    alt="Maskot Hati Evomi"
                     fill
                     className="object-contain"
                     priority
@@ -143,33 +144,33 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   Aroma ini sangat mencerminkan karaktermu yang unik. Siap meningkatkan rasa percaya dirimu?
                 </p>
 
+                {/* Button Order */}
                 <div className="bg-stone-50 p-6 rounded-2xl mb-8 border border-stone-100">
                   <p className="text-[10px] uppercase tracking-widest font-bold text-stone-900 mb-4">
                     Order di Official Store:
                   </p>
                   <div className="flex flex-col gap-3">
                     {/* Button Tokopedia */}
-                    <a 
-                      href="https://www.tokopedia.com/toko-evomi" 
-                      target="_blank" 
+                    <a
+                      href="https://www.tokopedia.com/toko-evomi"
+                      target="_blank"
                       className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-stone-200 hover:border-stone-900 transition-all rounded-xl shadow-sm"
                     >
-                      {/* <Image src="https://ramadhan.alwaysdata.net/storage/toko online/tokopedia.png" alt="Tokopedia" width={18} height={18} /> */}
                       <span className="uppercase text-[10px] tracking-widest font-bold text-stone-700">Tokopedia</span>
                     </a>
-                    
+
                     {/* Button Shopee */}
-                    <a 
-                      href="https://shopee.co.id/toko-evomi" 
-                      target="_blank" 
+                    <a
+                      href="https://shopee.co.id/toko-evomi"
+                      target="_blank"
                       className="flex items-center justify-center gap-3 w-full py-3 bg-white border border-stone-200 hover:border-stone-900 transition-all rounded-xl shadow-sm"
                     >
-                      {/* <Image src="https://ramadhan.alwaysdata.net/storage/toko online/shopee.png" alt="Shopee" width={18} height={18} /> */}
                       <span className="uppercase text-[10px] tracking-widest font-bold text-stone-700">Shopee</span>
                     </a>
                   </div>
                 </div>
 
+                {/* Button Actions */}
                 <div className="flex flex-col gap-3">
                   <button onClick={resetQuiz} className="w-full py-3 border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-all uppercase text-[10px] tracking-widest font-bold">Ulangi Quiz</button>
                   <button onClick={onClose} className="w-full py-3 bg-stone-900 text-white uppercase text-[10px] tracking-widest font-bold">Tutup</button>
