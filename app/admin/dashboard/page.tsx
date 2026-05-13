@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';  // State untuk data statistik, loading, dan proses penghapusan
+import { useRouter } from "next/navigation";  // Router untuk navigasi halaman admin
+
+// Icons
 import {
   ChevronRight,
   ChevronLeft,
@@ -13,10 +15,10 @@ import {
 import { BASE_URL } from "@/src/config/strings";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);  // State untuk menyimpan data statistik dashboard
+  const [loading, setLoading] = useState(true);   // State loading saat mengambil data
   const [isDeleting, setIsDeleting] = useState(false); // State loading saat hapus
-  const router = useRouter();
+  const router = useRouter();   // Router untuk navigasi halaman admin
 
   // --- STATE UNTUK PAGINATION ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,11 +32,13 @@ export default function AdminDashboard() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
 
+  // Fungsi untuk menampilkan modal dengan konfigurasi dinamis
   const showModal = (title: string, message: string, type = 'success') => {
     setModalConfig({ title, message, type });
     setIsModalOpen(true);
   };
 
+  // Fungsi untuk mengambil data statistik dashboard
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('admin_access_token');
@@ -64,6 +68,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch data saat komponen dimuat
   useEffect(() => {
     fetchData();
   }, []);
@@ -74,6 +79,7 @@ export default function AdminDashboard() {
     setIsDeleteModalOpen(true);
   };
 
+  // Fungsi untuk konfirmasi penghapusan pesanan
   const confirmDeleteOrder = async () => {
     if (!orderToDelete) return;
 
@@ -101,6 +107,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // --- FUNGSI UNTUK UPDATE STATUS PEMBAYARAN ---
   const handleStatusChange = async (orderId: any, newStatus: string) => {
     const token = localStorage.getItem('admin_access_token');
     try {
@@ -183,7 +190,10 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Tabel Recent Orders */}
       <main className="max-w-7xl mx-auto p-6 sm:p-8">
+
+        {/* Header */}
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Ringkasan aktivitas toko Evomi hari ini.</p>
@@ -207,6 +217,8 @@ export default function AdminDashboard() {
 
         {/* Tabel Recent Orders */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+          {/* Header */}
           <div className="p-4 border-b border-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-bold text-gray-800">Recent Orders</h2>
             <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="text-xs border border-gray-200 rounded-lg p-1 outline-none">
@@ -216,7 +228,10 @@ export default function AdminDashboard() {
             </select>
           </div>
 
+          {/* Tabel Pesanan Terbaru */}
           <div className="overflow-x-auto">
+
+            {/* Tabel */}
             <table className="w-full text-left">
               <thead className="bg-gray-50/50 text-gray-600 text-xs uppercase font-bold tracking-widest">
                 <tr>
@@ -271,6 +286,7 @@ export default function AdminDashboard() {
               <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30"><ChevronRight size={16} /></button>
             </div>
           </div>
+          
         </div>
       </main>
     </div>

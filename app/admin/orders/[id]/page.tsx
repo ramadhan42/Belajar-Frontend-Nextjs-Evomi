@@ -3,35 +3,31 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft,
-  Package,
-  Truck,
-  MapPin,
-  CreditCard,
-  Clock,
-  User as UserIcon,
-  ChevronRight
+  ArrowLeft, Package, Truck, MapPin, CreditCard, Clock, User as UserIcon
 } from "lucide-react";
 import Image from "next/image";
-
-// String global url
 import { BASE_URL } from "@/src/config/strings";
 
-// Component
 export default function AdminOrderDetail() {
   const params = useParams();
   const router = useRouter();
+
+  // Ambil ID dengan aman
+  const orderId = params?.id;
+
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Fetching Data Order
   const fetchOrderDetail = async () => {
+    if (!orderId) return; // Cegah fetch jika ID belum ada
+
     try {
       setLoading(true);
-      const token = localStorage.getItem("admin_access_token");   // Ambil token dari localStorage
+      setErrorMsg(null);
+      const token = localStorage.getItem("admin_access_token");
 
-      // Gunakan params.id langsung
-      const response = await fetch(BASE_URL + `/api/admin/orders/${params.id}`, {
+      const response = await fetch(`${BASE_URL}/api/admin/orders/${orderId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,31 +38,30 @@ export default function AdminOrderDetail() {
       const result = await response.json();
 
       if (response.ok && result.status === "success") {
-        // KRITIKAL: Laravel mengirim { status: "success", data: {...} }
-        // Maka kita harus ambil result.data
         setOrder(result.data);
       } else {
-        // Ini yang memunculkan pesan "Pesanan tidak ditemukan"
         console.error("API Error:", result.message);
+        setErrorMsg(result.message || "Pesanan tidak ditemukan dari server.");
         setOrder(null);
       }
     } catch (error) {
       console.error("Network Error:", error);
+      setErrorMsg("Gagal terhubung ke server.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Lifecycle
   useEffect(() => {
-    if (params.id) fetchOrderDetail();
-  }, [params.id]);
+    if (orderId) {
+      fetchOrderDetail();
+    }
+  }, [orderId]);
 
-  // Fungsi Update Status (Sama seperti di dashboard)
   const handleStatusChange = async (newStatus: string) => {
     const token = localStorage.getItem('admin_access_token');
     try {
-      const response = await fetch(BASE_URL + `/api/admin/orders/${order.id}`, {
+      const response = await fetch(`${BASE_URL}/api/admin/orders/${order.id}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -80,17 +75,32 @@ export default function AdminOrderDetail() {
       });
 
       if (response.ok) {
-        fetchOrderDetail(); // Refresh data
+        fetchOrderDetail();
       }
     } catch (error) {
       console.error("Gagal update status:", error);
     }
   };
 
-  // Loading State
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    </div>
+  );
+
+  // Tampilkan pesan error jika API gagal atau 404
+  if (errorMsg || !order) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="p-10 text-center bg-white rounded-2xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Oops!</h2>
+        <p className="text-gray-500 mb-6">{errorMsg || "Order tidak ditemukan."}</p>
+        <button
+          onClick={() => router.back()}
+          className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+        >
+          Kembali
+        </button>
+      </div>
     </div>
   );
 
@@ -99,9 +109,12 @@ export default function AdminOrderDetail() {
   // Render UI
   return (
     <div className="bg-[#F8FAFC] min-h-screen pb-20">
+
       {/* NAVBAR */}
       <nav className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+
+          {/* Back Button */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}

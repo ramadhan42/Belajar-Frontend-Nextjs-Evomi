@@ -74,12 +74,15 @@ export default function ProductsMenu() {
         "Splash & Aftershave"
     ];
 
+    // URL API tetap sama, bisa dipindah ke luar komponen jika tidak berubah
     const API_URL = BASE_URL + "/api/products";
 
+    // Fetch produk saat komponen pertama kali dimuat
     useEffect(() => {
         fetchProducts();
     }, []);
 
+    // Fungsi untuk mengambil data produk dari API
     const fetchProducts = async () => {
         try {
             const res = await fetch(API_URL);
@@ -98,14 +101,17 @@ export default function ProductsMenu() {
     const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(products.length / itemsPerPage);
 
+    // Fungsi untuk navigasi halaman
     const goToNextPage = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
+    // Fungsi untuk navigasi halaman
     const goToPrevPage = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
+    // Fungsi untuk menangani perubahan input form
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         const updatedValue = ["brand_id", "harga_retail", "stok_tersedia"].includes(name)
@@ -114,14 +120,17 @@ export default function ProductsMenu() {
         setFormData({ ...formData, [name]: updatedValue });
     };
 
+    // Fungsi untuk menangani perubahan pada React Quill
     const handleQuillChange = (value: string) => {
         setFormData({ ...formData, deskripsi: value });
     };
 
+    // Fungsi untuk menangani perubahan file input
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) setImageFile(e.target.files[0]);
     };
 
+    // Fungsi untuk membuka modal tambah produk baru
     const openCreateModal = () => {
         setFormData({
             id: "", brand_id: 4, nama: "", harga_retail: 0, stok_tersedia: 0,
@@ -134,6 +143,7 @@ export default function ProductsMenu() {
         setIsModalOpen(true);
     };
 
+    // Fungsi untuk membuka modal edit produk dengan data yang sudah terisi
     const openEditModal = (product: Product) => {
         setFormData({
             id: product.id, brand_id: product.brand_id, nama: product.nama,
@@ -149,6 +159,7 @@ export default function ProductsMenu() {
         setIsModalOpen(true);
     };
 
+    
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const data = new FormData();

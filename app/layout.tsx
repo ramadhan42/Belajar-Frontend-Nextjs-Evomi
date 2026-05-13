@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+// layout.tsx
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 // --------------------------------------------------
 // konfigurasi local font pada next js, ask gemini ai
 // --------------------------------------------------
@@ -45,18 +49,18 @@ export const metadata: Metadata = {
 };
 
 // TODO: Add discount logic here
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body
-        suppressHydrationWarning
-        className={`${brandFont.variable} ${bodyFont.variable} min-h-full flex flex-col`}
-      >
-        {children}
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${brandFont.variable} ${bodyFont.variable} min-h-full flex flex-col bg-white dark:bg-stone-950 transition-colors duration-300`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

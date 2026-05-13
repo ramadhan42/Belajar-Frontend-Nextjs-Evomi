@@ -139,6 +139,7 @@ export default function OrdersPage() {
         return matchesSearch && matchesStatus;
     });
 
+    // Logika pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
@@ -147,6 +148,8 @@ export default function OrdersPage() {
     return (
         <div className="bg-gray-50 min-h-screen p-8">
             <div className="max-w-7xl mx-auto">
+
+                {/* Header */}
                 <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
@@ -178,6 +181,7 @@ export default function OrdersPage() {
                     </div>
                 </header>
 
+                {/* Tabel */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">

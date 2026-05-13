@@ -32,20 +32,24 @@ export default function ArticlesMenu() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-      const goToNextPage = () => {
+    // Fungsi untuk navigasi halaman berikutnya dan sebelumnya
+    const goToNextPage = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
+    // Fungsi untuk navigasi ke halaman sebelumnya, dengan pengecekan agar tidak kurang dari 1
     const goToPrevPage = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
+    // State untuk mengelola pesan sukses setelah operasi CRUD, dengan tipe untuk membedakan jenis operasi (create, update, delete)
     const [successModal, setSuccessModal] = useState({
         isOpen: false,
         message: "",
         type: ""
     });
 
+    // State untuk form data artikel, termasuk field slug yang baru ditambahkan
     const [formData, setFormData] = useState({
         title: "",
         slug: "", // Tambahan state slug
@@ -53,12 +57,15 @@ export default function ArticlesMenu() {
         content: ""
     });
 
+    // URL dasar untuk API artikel, digunakan untuk semua operasi CRUD
     const API_URL = `${BASE_URL}/api/articles`;
 
+    // Fetch artikel saat komponen pertama kali dimuat
     useEffect(() => {
         fetchArticles();
     }, []);
 
+    // Fungsi untuk mengambil data artikel dari backend, dengan penanganan error dan pengaturan state loading
     const fetchArticles = async () => {
         try {
             const res = await fetch(API_URL);
@@ -86,6 +93,7 @@ export default function ArticlesMenu() {
         }
     }, [articles, totalPages, currentPage]);
 
+    // Fungsi untuk menampilkan modal sukses dengan pesan yang sesuai, dan otomatis menutup setelah 3 detik
     const showSuccess = (message: string, type: string) => {
         setSuccessModal({ isOpen: true, message, type });
         setTimeout(() => {
@@ -93,6 +101,7 @@ export default function ArticlesMenu() {
         }, 3000);
     };
 
+    // Handler untuk perubahan input pada form, mengupdate state formData sesuai dengan nama field yang diubah
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -118,6 +127,7 @@ export default function ArticlesMenu() {
         });
     };
 
+    // Fungsi untuk membuka modal dengan form kosong untuk membuat artikel baru, dan reset state terkait seperti formData, imageFile, dan editingId
     const openCreateModal = () => {
         setFormData({ title: "", slug: "", author: "Evomi Editorial", content: "" });
         setImageFile(null);
@@ -125,6 +135,7 @@ export default function ArticlesMenu() {
         setIsModalOpen(true);
     };
 
+    // Fungsi untuk membuka modal dengan data artikel yang sudah ada untuk diedit, mengisi formData dengan data artikel yang dipilih, dan reset state terkait seperti imageFile
     const openEditModal = (article: Article) => {
         setFormData({
             title: article.title,
@@ -137,6 +148,7 @@ export default function ArticlesMenu() {
         setIsModalOpen(true);
     };
 
+    // Handler untuk submit form, mengirim data ke backend untuk membuat atau memperbarui artikel, dengan penanganan file gambar jika ada, dan menampilkan pesan sukses setelah operasi berhasil
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const data = new FormData();
