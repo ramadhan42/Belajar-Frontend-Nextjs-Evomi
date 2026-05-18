@@ -138,6 +138,7 @@ export default function ArticlesMenu() {
         setIsModalOpen(true);
     };
 
+    
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const data = new FormData();

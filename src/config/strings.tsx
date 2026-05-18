@@ -7,7 +7,7 @@ export const BASE_URL_LOCAL = "http://127.0.0.1:8000"
 export const BASE_URL_ONLINE = "https://ramadhan.alwaysdata.net"
 
 // Base URL yang digunakan untuk API, bisa diubah sesuai kebutuhan (local atau online)
-export const BASE_URL = BASE_URL_LOCAL
+export const BASE_URL = BASE_URL_ONLINE
 
 export const HARGA_EVOMI = 100
 export const HARGA_ONGKIR = 100
