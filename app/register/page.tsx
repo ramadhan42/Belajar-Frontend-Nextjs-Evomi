@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, User, Mail, AtSign, Loader2, ArrowLeft } from "lucide-react";
+import { Lock, User, Mail, AtSign, Loader2, ArrowLeft } from "lucide-react";  
 
 // String global url
 import { BASE_URL} from "@/src/config/strings";
@@ -24,15 +24,24 @@ export default function RegisterPage() {
 
   // State untuk loading dan error handling
   const [loading, setLoading] = useState(false);
+
+  // State untuk menampilkan pesan error dari API Laravel
   const [error, setError] = useState("");
 
   // Handler untuk submit form
   const handleSubmit = async (e: React.FormEvent) => {
+
+    // Mencegah reload halaman saat submit
     e.preventDefault();
+
+    // Reset error dan set loading saat mulai proses
     setLoading(true);
+
+    // Reset error sebelum mencoba registrasi
     setError("");
 
     try {
+      // Kirim data ke API Laravel untuk proses registrasi, pastikan endpoint dan struktur data sesuai dengan API Laravel kamu
       const response = await fetch(BASE_URL + "/api/register", {  // Endpoint API Laravel untuk register
         method: "POST",
         headers: {
@@ -42,6 +51,7 @@ export default function RegisterPage() {
         body: JSON.stringify(formData),
       });
 
+      // Parsing response dari API Laravel, bisa berupa data user dan token atau error message
       const data = await response.json();
 
       if (!response.ok) {
@@ -211,6 +221,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -220,6 +231,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
+          {/* Login Link */}
           <div className="mt-10 text-center">
             <p className="text-[13px] text-slate-400 font-medium">
               Already have an account?{" "}
@@ -233,6 +245,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        {/* Footer */}
         <p className="text-center mt-8 text-[9px] text-slate-400 font-medium uppercase tracking-[0.3em]">
           Official Evomi Registration Portal
         </p>

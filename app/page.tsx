@@ -257,7 +257,8 @@ export default function EvomiLandingPage() {
               <a href="#about" className="hover:text-blue-200 transition-colors">About</a>
               <a href="#product" className="hover:text-blue-200 transition-colors">Collection</a>
               <Link href="/produk" className="hover:text-blue-200 transition-colors">Shop</Link>
-              <button onClick={() => setIsQuizOpen(true)} className="hover:text-blue-200 transition-colors uppercase">Quiz</button>
+              <Link href="/quiz" className="hover:text-blue-200 transition-colors">Quiz</Link>
+              {/* <button onClick={() => setIsQuizOpen(true)} className="hover:text-blue-200 transition-colors uppercase">Quiz</button> */}
               <Link href="/artikel" className="hover:text-blue-200 transition-colors">Artikel</Link>
             </div>
 
@@ -323,9 +324,13 @@ export default function EvomiLandingPage() {
                       </motion.div>
                     ))}
                     <motion.div variants={itemVars}>
-                      <button onClick={() => { setIsQuizOpen(true); setIsMobileMenuOpen(false); }} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
+                      {/* <button onClick={() => { setIsQuizOpen(true); setIsMobileMenuOpen(false); }} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
                         Quiz
-                      </button>
+                      </button> */}
+
+                      <Link href="/quiz" onClick={() => setIsMobileMenuOpen(false)} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
+                        Quiz
+                      </Link>
                     </motion.div>
                     <motion.div variants={itemVars}>
                       <Link href="/artikel" onClick={() => setIsMobileMenuOpen(false)} className={`${fontJudul.className} text-2xl tracking-[0.2em] text-white uppercase`}>
