@@ -75,6 +75,7 @@ export default function AdminChatDashboard() {
         <div className="flex h-screen bg-stone-100 font-sans">
             {/* Sidebar: Daftar User */}
             <div className="w-1/3 bg-white border-r border-stone-200 overflow-y-auto flex flex-col">
+            
                 {/* Header Sidebar */}
                 <div className="p-6 border-b border-stone-100 bg-white sticky top-0 z-10">
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-stone-900">

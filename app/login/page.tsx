@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // handle submit login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +51,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] px-4 relative">
+      
       {/* NAVIGASI BACK TO HOME: Meniru pola navigasi pada halaman Register */}
       <Link
         href="/"

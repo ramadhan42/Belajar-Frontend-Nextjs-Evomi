@@ -1,13 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+/* =========================================================================
+ * IMPORT DEPENDENCIES
+ * - useEffect & useState : manajemen state dan lifecycle komponen
+ * - Image                : komponen gambar optimasi dari Next.js
+ * - Link                 : navigasi ke halaman checkout dan produk
+ * - BASE_URL             : konstanta URL API global
+ * ========================================================================= */
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-// String global url
 import { BASE_URL } from "@/src/config/strings";
 
-// Definisikan tipe data sesuai dengan yang kita simpan di JSON Laravel
+/* =========================================================================
+ * INTERFACE: CartItem
+ * Mendefinisikan struktur data satu item di keranjang belanja.
+ * Sesuai dengan format JSON yang dikirim oleh API Laravel.
+ * - product_id : ID unik produk (digunakan sebagai key dan untuk hapus item)
+ * - name       : nama produk
+ * - price      : harga satuan produk
+ * - quantity   : jumlah item dalam keranjang
+ * - image_url  : URL lengkap gambar produk
+ * - image      : nama file gambar (field tambahan dari API)
+ * ========================================================================= */
 interface CartItem {
   product_id: string;
   name: string;
@@ -17,13 +32,35 @@ interface CartItem {
   image: string;
 }
 
-// shopping bag component
+/* =========================================================================
+ * KOMPONEN UTAMA: ShoppingBag
+ * Menampilkan isi keranjang belanja user yang sedang login.
+ * Fitur:
+ * - Fetch data keranjang dari API saat komponen dimuat
+ * - Hapus item dengan optimistic UI update (tampilan diperbarui sebelum API selesai)
+ * - Kalkulasi subtotal otomatis dari semua item
+ * - State kosong: tampilkan pesan dan tombol "Mulai Belanja"
+ * - Tombol "Proceed to Checkout" mengarah ke halaman /checkout
+ * ========================================================================= */
 export default function ShoppingBag() {
+
+  /* -----------------------------------------------------------------------
+   * STATE
+   * - cartItems : array item yang ada di keranjang belanja user
+   * - loading   : indikator loading saat fetch data keranjang
+   * - error     : pesan error jika fetch gagal atau user belum login
+   * ----------------------------------------------------------------------- */
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fungsi untuk mengambil data keranjang dari Laravel
+  /* -----------------------------------------------------------------------
+   * FUNGSI: fetchCart
+   * Mengambil data keranjang belanja user dari API.
+   * - Menampilkan pesan error jika token tidak ditemukan (belum login)
+   * - Menyimpan array cart dari response ke state cartItems
+   * - Response API: { status: 'success', cart: [...] }
+   * ----------------------------------------------------------------------- */
   const fetchCart = async () => {
     const token = localStorage.getItem("access_token");
 
@@ -39,13 +76,12 @@ export default function ShoppingBag() {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // SPASI SETELAH 'Bearer' SANGAT PENTING
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        // Laravel mengirim response: { status: 'success', cart: [...] }
         setCartItems(data.cart || []);
       } else {
         setError("Gagal memuat data keranjang.");
@@ -58,12 +94,20 @@ export default function ShoppingBag() {
     }
   };
 
-  // Fungsi untuk menghapus item (menggunakan route DELETE yang sudah dibuat)
+  /* -----------------------------------------------------------------------
+   * FUNGSI: handleRemove
+   * Menghapus satu item dari keranjang berdasarkan product_id.
+   * Menggunakan pola Optimistic UI Update:
+   * 1. Hapus item dari state terlebih dahulu agar UI terasa responsif
+   * 2. Kirim request DELETE ke API di background
+   * 3. Jika API gagal, panggil fetchCart() untuk mengembalikan data asli
+   * @param productId - ID produk yang akan dihapus dari keranjang
+   * ----------------------------------------------------------------------- */
   const handleRemove = async (productId: string) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
-    // Optimistic update UI (Hapus dari tampilan dulu agar terasa cepat)
+    // Optimistic update: hapus dari tampilan dulu agar terasa cepat
     setCartItems((prev) =>
       prev.filter((item) => item.product_id !== productId),
     );
@@ -74,28 +118,38 @@ export default function ShoppingBag() {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // SPASI SETELAH 'Bearer' SANGAT PENTING
+          Authorization: `Bearer ${token}`,
         },
       });
-      // Jika butuh memastikan data 100% sinkron, bisa panggil fetchCart() lagi di sini
     } catch (err) {
       console.error("Remove Error:", err);
-      // Jika gagal, kembalikan data keranjang seperti semula dengan fetch ulang
+      // Jika gagal, kembalikan data keranjang seperti semula
       fetchCart();
     }
   };
 
-  // Hitung total harga
+  /* -----------------------------------------------------------------------
+   * KALKULASI: subtotal
+   * Menghitung total harga semua item di keranjang.
+   * Dihitung ulang setiap kali cartItems berubah (derived value).
+   * ----------------------------------------------------------------------- */
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
 
-  // Jalankan fetch saat komponen dimuat
+  /* -----------------------------------------------------------------------
+   * EFFECT: Inisialisasi Data
+   * Memanggil fetchCart satu kali saat komponen pertama kali dimuat.
+   * ----------------------------------------------------------------------- */
   useEffect(() => {
     fetchCart();
   }, []);
 
+  /* -----------------------------------------------------------------------
+   * LOADING STATE
+   * Menampilkan teks animasi pulse saat data keranjang belum selesai dimuat.
+   * ----------------------------------------------------------------------- */
   if (loading) {
     return (
       <div className="p-8 text-center text-stone-500 animate-pulse">
@@ -104,6 +158,10 @@ export default function ShoppingBag() {
     );
   }
 
+  /* -----------------------------------------------------------------------
+   * ERROR STATE
+   * Menampilkan pesan error jika fetch gagal atau user belum login.
+   * ----------------------------------------------------------------------- */
   if (error) {
     return <div className="p-8 text-center text-red-500">{error}</div>;
   }
@@ -114,6 +172,11 @@ export default function ShoppingBag() {
         Shopping Bag
       </h2>
 
+      {/* ===================================================================
+       * STATE KOSONG
+       * Ditampilkan jika keranjang tidak memiliki item.
+       * Tombol "Mulai Belanja" mengarahkan ke section produk di landing page.
+       * =================================================================== */}
       {cartItems.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-stone-500 mb-4">Shopping bag Anda masih kosong.</p>
@@ -126,14 +189,21 @@ export default function ShoppingBag() {
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {/* List Produk */}
+
+          {/* ===============================================================
+           * DAFTAR ITEM KERANJANG
+           * Setiap item menampilkan:
+           * - Thumbnail gambar produk
+           * - Nama, harga satuan, jumlah (qty), dan tombol Remove
+           * - Total harga per item (hanya tampil di desktop)
+           * =============================================================== */}
           <div className="divide-y divide-stone-100">
             {cartItems.map((item) => (
               <div
                 key={item.product_id}
                 className="py-6 flex gap-4 md:gap-6 items-center"
               >
-                {/* Gambar Produk */}
+                {/* Thumbnail gambar produk */}
                 <div className="relative w-20 h-24 md:w-24 md:h-32 bg-stone-100 rounded-lg overflow-hidden shrink-0">
                   <Image
                     src={`${item.image_url}`}
@@ -143,7 +213,7 @@ export default function ShoppingBag() {
                   />
                 </div>
 
-                {/* Detail Produk */}
+                {/* Detail produk: nama, harga, qty, tombol hapus */}
                 <div className="flex-1">
                   <h3 className="text-lg font-medium text-stone-800">
                     {item.name}
@@ -153,9 +223,11 @@ export default function ShoppingBag() {
                   </p>
 
                   <div className="flex items-center gap-4 mt-4">
+                    {/* Badge jumlah item */}
                     <span className="text-xs text-stone-500 bg-stone-100 px-3 py-1 rounded-full">
                       Qty: {item.quantity}
                     </span>
+                    {/* Tombol hapus item — memanggil handleRemove dengan optimistic update */}
                     <button
                       onClick={() => handleRemove(item.product_id)}
                       className="text-xs text-red-400 hover:text-red-600 underline underline-offset-2 transition-colors"
@@ -165,7 +237,7 @@ export default function ShoppingBag() {
                   </div>
                 </div>
 
-                {/* Total Harga per Item */}
+                {/* Total harga per item — hanya tampil di layar desktop */}
                 <div className="text-right hidden md:block">
                   <p className="font-medium text-stone-800">
                     Rp {(item.price * item.quantity).toLocaleString("id-ID")}
@@ -175,8 +247,14 @@ export default function ShoppingBag() {
             ))}
           </div>
 
-          {/* Ringkasan Pembayaran */}
+          {/* ===============================================================
+           * RINGKASAN PEMBAYARAN & TOMBOL CHECKOUT
+           * Menampilkan subtotal total semua item dan tombol
+           * "Proceed to Checkout" yang mengarah ke halaman /checkout.
+           * Ikon panah bergerak ke kanan saat tombol di-hover.
+           * =============================================================== */}
           <div className="mt-8 pt-8 border-t border-stone-200">
+            {/* Baris subtotal */}
             <div className="flex justify-between items-end mb-6">
               <span className="text-stone-500 uppercase tracking-widest text-sm">
                 Subtotal
@@ -186,6 +264,7 @@ export default function ShoppingBag() {
               </span>
             </div>
 
+            {/* Tombol checkout — ikon panah bergerak ke kanan saat hover */}
             <Link href="/checkout">
               <button className="w-full bg-gray-900 text-white py-4 rounded-xl font-medium hover:bg-gray-800 transition-all shadow-md flex justify-center items-center gap-2 group">
                 Proceed to Checkout

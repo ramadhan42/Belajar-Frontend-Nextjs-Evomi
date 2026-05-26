@@ -49,7 +49,7 @@ const fontCaption = localFont({
   display: "swap",
 });
 
-// 
+// Product Detail Page
 export default function ProductDetailPage({
   params,
 }: {
@@ -130,6 +130,7 @@ export default function ProductDetailPage({
     };
   }, [user]);
 
+  // get detail
   useEffect(() => {
     const getDetail = async () => {
       try {
@@ -155,6 +156,7 @@ export default function ProductDetailPage({
     getDetail(); // Get detail product
   }, [params]);
 
+  // loading
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9] text-stone-400 text-[10px] uppercase tracking-widest">
@@ -167,6 +169,7 @@ export default function ProductDetailPage({
       </div>
     );
 
+    // error
   if (error || !produk)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#FBFBF9] px-4 text-center">

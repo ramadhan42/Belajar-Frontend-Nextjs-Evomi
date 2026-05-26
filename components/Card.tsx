@@ -1,12 +1,14 @@
 import { HTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
+// card props
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "bordered" | "elevated" | "ghost";
   padding?: "none" | "sm" | "md" | "lg";
   hover?: boolean;
 }
 
+// variant styles
 const variantStyles = {
   default: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800",
   bordered: "bg-transparent border-2 border-neutral-200 dark:border-neutral-700",
@@ -14,6 +16,7 @@ const variantStyles = {
   ghost: "bg-neutral-50 dark:bg-neutral-800/50",
 };
 
+// padding styles
 const paddingStyles = {
   none: "",
   sm: "p-4",
@@ -21,6 +24,7 @@ const paddingStyles = {
   lg: "p-8",
 };
 
+// card
 const Card = forwardRef<HTMLDivElement, CardProps>(
   (
     {

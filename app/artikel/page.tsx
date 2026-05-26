@@ -27,6 +27,7 @@ const fadeInUp: Variants = {
     }
 };
 
+// stagger container
 const staggerContainer: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -35,6 +36,7 @@ const staggerContainer: Variants = {
     }
 };
 
+// mobile menu vars
 const mobileMenuVars: Variants = {
     hidden: { opacity: 0, height: 0 },
     visible: {
@@ -45,6 +47,7 @@ const mobileMenuVars: Variants = {
     exit: { opacity: 0, height: 0, transition: { duration: 0.3, ease: "easeInOut" } }
 };
 
+// item vars
 const itemVars: Variants = {
     hidden: { opacity: 0, x: -10 },
     visible: { opacity: 1, x: 0 }
@@ -57,6 +60,7 @@ const fontJudul = localFont({
     display: "swap",
 });
 
+// font caption
 const fontCaption = localFont({
     src: "../fonts/Nohemi-Regular.otf",
     variable: "--font-body",

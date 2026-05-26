@@ -4,9 +4,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import localFont from "next/font/local";
-import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { SocialIcon } from "react-social-icons";
+// import { SocialIcon } from "react-social-icons";
+import { useRouter, useParams } from "next/navigation";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 
 import WavyNavbarGradient from "@/components/WavyNavbarGradient";
@@ -224,6 +224,7 @@ export default function ArtikelDetailPage() {
       </div>
     );
 
+    // tidak ada artikel
   if (!article)
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9]">

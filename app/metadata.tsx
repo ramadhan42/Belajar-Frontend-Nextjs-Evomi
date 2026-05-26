@@ -109,12 +109,14 @@ export const artikelMetadata: Metadata = {
   },
 };
 
+// login meta data
 export const loginMetadata: Metadata = {
   title: "Masuk ke Akun",
   description: "Masuk ke akun Evomi untuk melihat pesanan dan wishlist kamu.",
   robots: { index: false }, // halaman login tidak perlu diindex
 };
 
+// register meta data
 export const registerMetadata: Metadata = {
   title: "Daftar Akun Baru",
   description: "Buat akun Evomi dan dapatkan akses ke koleksi eksklusif kami.",

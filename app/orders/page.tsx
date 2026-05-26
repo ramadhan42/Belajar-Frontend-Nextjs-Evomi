@@ -12,6 +12,7 @@ import WavyNavbarGradient from "@/components/WavyNavbarGradient";
 // String global url
 import { BASE_URL } from "@/src/config/strings";
 
+// container variants
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -22,6 +23,7 @@ const containerVariants = {
     }
 };
 
+// item variants
 const itemVariants = { 
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -38,6 +40,7 @@ const fontJudul = localFont({
     display: "swap",
 });
 
+// local fonts
 const fontCaption = localFont({ 
     src: "../fonts/Nohemi-Regular.otf",
     variable: "--font-body",
@@ -126,6 +129,7 @@ export default function OrderHistoryPage() {
         };
     }, [user]);
 
+    // Handle Logout
     const handleLogout = async () => {
         try {
             const token = localStorage.getItem("access_token");
@@ -147,6 +151,7 @@ export default function OrderHistoryPage() {
         }
     };
 
+    // Get Status Style
     const getStatusStyle = (status: string) => {
         switch (status?.toLowerCase()) {
             case "success": return "bg-emerald-50 text-emerald-700 border-emerald-100";
@@ -169,6 +174,7 @@ export default function OrderHistoryPage() {
         }
     };
 
+    // Handle Prev Page
     const handlePrevPage = () => {
         if (currentPage > 1) {
             setCurrentPage(prev => prev - 1);
@@ -350,6 +356,7 @@ export default function OrderHistoryPage() {
                 )}
             </main>
 
+            {/* Footer */}
             <footer className="py-12 text-center">
                 <p className="text-[9px] text-stone-300 uppercase tracking-[0.4em] font-bold">Evomi Fragrance House • Jakarta</p>
             </footer>

@@ -268,12 +268,14 @@ export default function OrderDetailPage() {
         }
     };
 
+    // loading
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9] text-stone-400 text-[10px] uppercase tracking-[0.3em] animate-pulse">
             Retrieving Order Details...
         </div>
     );
 
+    // tidak ada order
     if (!order) return null;
 
     return (

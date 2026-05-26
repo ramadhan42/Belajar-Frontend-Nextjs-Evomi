@@ -129,6 +129,12 @@ const ProductCard = ({ parfum }: { parfum: any }) => {
   );
 };
 
+// ============================================================
+// Halaman Produk
+// Menampilkan daftar produk, fitur navigasi, modal chat, dan
+// interaksi pengguna seperti login, logout, serta pagination.
+// ============================================================
+
 // Halaman utama
 export default function ProductsPage() {
   const router = useRouter();
@@ -157,6 +163,7 @@ export default function ProductsPage() {
     image: string;
   } | null>(null);
 
+  // useeffect
   useEffect(() => {
     setMounted(true);
     const token = localStorage.getItem("access_token");
@@ -170,6 +177,7 @@ export default function ProductsPage() {
     }
   }, []);
 
+  // useeffect 2
   useEffect(() => {
     if (!user) return;
     const setOnlineStatus = async () => {
@@ -203,6 +211,7 @@ export default function ProductsPage() {
     };
   }, [user]);
 
+  // useeffect 3
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -220,6 +229,7 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  // handle logout
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("access_token");
@@ -248,8 +258,11 @@ export default function ProductsPage() {
     indexOfFirstProduct,
     indexOfLastProduct,
   );
+
+  // total pages
   const totalPages = Math.ceil(products.length / productsPerPage);
 
+  // paginate
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     const productSection = document.getElementById("collection-grid");
@@ -261,6 +274,7 @@ export default function ProductsPage() {
     }
   };
 
+  // !mounted
   if (!mounted) return null;
 
   return (

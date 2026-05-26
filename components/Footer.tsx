@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { FaGithub, FaTwitter, FaLinkedin } from "react-icons/fa6";
-import NewsletterForm from "@/components/NewsletterForm";
 
+// footer link
 interface FooterLink {
   label: string;
   href: string;
 }
 
+// footer section
 interface FooterSection {
   title: string;
   links: FooterLink[];
 }
 
+// footer sections
 const footerSections: FooterSection[] = [
   {
     title: "Product",
@@ -42,6 +44,7 @@ const footerSections: FooterSection[] = [
   },
 ];
 
+// social links
 const socialLinks = [
   { icon: FaGithub, href: "https://github.com", label: "GitHub" },
   { icon: FaTwitter, href: "https://twitter.com", label: "Twitter" },
@@ -54,6 +57,7 @@ export default function Footer() {
     <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+          
           {/* Brand column */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -104,6 +108,7 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+
         </div>
 
         {/* Bottom bar */}

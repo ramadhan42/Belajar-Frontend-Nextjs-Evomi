@@ -22,7 +22,7 @@ const fadeInUp = {
     }
 };
 
-// 
+// stagger container
 const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -204,6 +204,7 @@ export default function CheckoutPage() {
     const shipping = HARGA_ONGKIR;
     const total = subtotal + shipping;
 
+    // loading
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#FBFBF9] text-stone-400 text-[10px] uppercase tracking-[0.3em] animate-pulse">
             Finalizing Essence...
@@ -245,13 +246,17 @@ export default function CheckoutPage() {
                 )}
             </AnimatePresence>
 
+            {/* Navbar checkout */}
             <nav className="fixed w-full z-[100] bg-[#0071bc] backdrop-blur-xl border-b border-white/5 h-20 flex items-center justify-between px-8">
 
                 {/* BARU: Memanggil Komponen Wavy Curve */}
                 <WavyNavbarGradient />
+
+                {/* Arrow back to profile */}
                 <Link href="/profile" className="text-white/60 hover:text-white transition-colors">
                     <ArrowLeft size={20} />
                 </Link>
+                
                 <div className={`${fontJudul.className} text-xl tracking-[0.2em] uppercase text-white`}>Evomi</div>
                 <div className="w-5" />
             </nav>

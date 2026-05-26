@@ -58,7 +58,7 @@ const productImages: Record<string, string> = {
   "Sweet Shy": "https://ramadhan.alwaysdata.net/storage/new products/gemini - rabel brave.png"
 };
 
-
+// quiz modal
 export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [current, setCurrent] = useState(0);
   const [userChoices, setUserChoices] = useState<string[]>([]);
@@ -94,6 +94,7 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
     return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
   };
 
+  // final result
   const finalResult = finished ? getResult() : "";
 
   return (
@@ -130,15 +131,6 @@ export default function QuizModal({ isOpen, onClose }: { isOpen: boolean; onClos
                 <h2 className="text-3xl font-bold mb-6 text-stone-900">{finalResult}</h2>
 
                 {/* Sisipkan Gambar Maskot di Sini */}
-                {/* <div className="relative w-48 h-48 mx-auto mb-6 drop-shadow-xl">
-                  <Image
-                    src="http://127.0.0.1:8000/storage/quiz-poster/cloud.png" // Menggunakan path gambar yang baru
-                    alt="Maskot Hati Evomi"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div> */}
 
                 <p className="text-stone-500 text-sm mb-8 leading-relaxed px-4">
                   Aroma ini sangat mencerminkan karaktermu yang unik. Siap meningkatkan rasa percaya dirimu?

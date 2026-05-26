@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';  // State untuk data statistik, loading, dan proses penghapusan
-import { useRouter } from "next/navigation";  // Router untuk navigasi halaman admin
+/* =========================================================================
+ * IMPORT DEPENDENCIES
+ * - useEffect & useState : manajemen state dan lifecycle komponen
+ * - useRouter            : navigasi programatik antar halaman admin
+ * - Lucide Icons         : ikon untuk tombol aksi dan navigasi
+ * - BASE_URL             : konstanta URL API global
+ * ========================================================================= */
+import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
 
-// Icons
 import {
   ChevronRight,
   ChevronLeft,
@@ -11,34 +17,68 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-// String global url
 import { BASE_URL } from "@/src/config/strings";
 
+/* =========================================================================
+ * KOMPONEN UTAMA: AdminDashboard
+ * Menampilkan ringkasan statistik toko, tabel pesanan terbaru,
+ * serta fitur update status dan hapus pesanan.
+ * ========================================================================= */
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<any>(null);  // State untuk menyimpan data statistik dashboard
-  const [loading, setLoading] = useState(true);   // State loading saat mengambil data
-  const [isDeleting, setIsDeleting] = useState(false); // State loading saat hapus
-  const router = useRouter();   // Router untuk navigasi halaman admin
 
-  // --- STATE UNTUK PAGINATION ---
+  /* -----------------------------------------------------------------------
+   * STATE UTAMA
+   * - stats      : data statistik dari API (produk, pesanan, pendapatan)
+   * - loading    : indikator loading saat fetch data pertama kali
+   * - isDeleting : indikator loading saat proses penghapusan pesanan
+   * ----------------------------------------------------------------------- */
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  /* -----------------------------------------------------------------------
+   * STATE PAGINATION
+   * - currentPage  : halaman aktif pada tabel pesanan
+   * - itemsPerPage : jumlah baris yang ditampilkan per halaman
+   * ----------------------------------------------------------------------- */
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  // --- STATE UNTUK MODAL NOTIFIKASI ---
+  /* -----------------------------------------------------------------------
+   * STATE MODAL NOTIFIKASI
+   * - isModalOpen  : kontrol visibilitas modal notifikasi global
+   * - modalConfig  : konfigurasi isi modal (judul, pesan, tipe)
+   * ----------------------------------------------------------------------- */
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState({ title: '', message: '', type: 'success' });
 
-  // --- STATE UNTUK MODAL DELETE CUSTOM ---
+  /* -----------------------------------------------------------------------
+   * STATE MODAL DELETE
+   * - isDeleteModalOpen : kontrol visibilitas modal konfirmasi hapus
+   * - orderToDelete     : data pesanan yang akan dihapus
+   * ----------------------------------------------------------------------- */
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
 
-  // Fungsi untuk menampilkan modal dengan konfigurasi dinamis
+  /* -----------------------------------------------------------------------
+   * FUNGSI: showModal
+   * Menampilkan modal notifikasi dengan konfigurasi dinamis.
+   * @param title   - Judul yang ditampilkan di modal
+   * @param message - Pesan detail yang ditampilkan di modal
+   * @param type    - Tipe modal: 'success' | 'error' (default: 'success')
+   * ----------------------------------------------------------------------- */
   const showModal = (title: string, message: string, type = 'success') => {
     setModalConfig({ title, message, type });
     setIsModalOpen(true);
   };
 
-  // Fungsi untuk mengambil data statistik dashboard
+  /* -----------------------------------------------------------------------
+   * FUNGSI: fetchData
+   * Mengambil data statistik dashboard dari API admin.
+   * - Redirect ke /admin-login jika token tidak valid (401)
+   * - Menghitung total pendapatan dari pesanan berstatus 'success'
+   * ----------------------------------------------------------------------- */
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('admin_access_token');
@@ -56,6 +96,8 @@ export default function AdminDashboard() {
       }
 
       const data = await response.json();
+
+      // Hitung total pendapatan hanya dari pesanan yang berstatus 'success'
       const calculatedRevenue = data.recent_orders?.reduce((acc: number, order: any) => {
         return order.status_pembayaran === 'success' ? acc + parseFloat(order.total_harga) : acc;
       }, 0) || 0;
@@ -68,18 +110,31 @@ export default function AdminDashboard() {
     }
   };
 
-  // Fetch data saat komponen dimuat
+  /* -----------------------------------------------------------------------
+   * EFFECT: Inisialisasi Data
+   * Memanggil fetchData satu kali saat komponen pertama kali dimuat.
+   * ----------------------------------------------------------------------- */
   useEffect(() => {
     fetchData();
   }, []);
 
-  // --- FUNGSI DELETE CUSTOM ---
+  /* -----------------------------------------------------------------------
+   * FUNGSI: openDeleteModal
+   * Membuka modal konfirmasi hapus dan menyimpan data pesanan yang dipilih.
+   * @param order - Objek pesanan yang akan dihapus
+   * ----------------------------------------------------------------------- */
   const openDeleteModal = (order: any) => {
     setOrderToDelete(order);
     setIsDeleteModalOpen(true);
   };
 
-  // Fungsi untuk konfirmasi penghapusan pesanan
+  /* -----------------------------------------------------------------------
+   * FUNGSI: confirmDeleteOrder
+   * Mengeksekusi penghapusan pesanan setelah dikonfirmasi oleh admin.
+   * - Memanggil API DELETE dengan ID pesanan yang dipilih
+   * - Menutup modal dan me-refresh data setelah berhasil
+   * - Menampilkan notifikasi error jika gagal
+   * ----------------------------------------------------------------------- */
   const confirmDeleteOrder = async () => {
     if (!orderToDelete) return;
 
@@ -107,7 +162,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- FUNGSI UNTUK UPDATE STATUS PEMBAYARAN ---
+  /* -----------------------------------------------------------------------
+   * FUNGSI: handleStatusChange
+   * Memperbarui status pembayaran sebuah pesanan melalui API.
+   * - Menggunakan method POST dengan _method: 'PUT' (Laravel spoofing)
+   * - Menampilkan notifikasi sukses/error setelah proses selesai
+   * @param orderId   - ID pesanan yang akan diperbarui
+   * @param newStatus - Status baru: 'pending' | 'success' | 'expired' | 'failed'
+   * ----------------------------------------------------------------------- */
   const handleStatusChange = async (orderId: any, newStatus: string) => {
     const token = localStorage.getItem('admin_access_token');
     try {
@@ -130,12 +192,19 @@ export default function AdminDashboard() {
     }
   };
 
-  // Pagination Logic
+  /* -----------------------------------------------------------------------
+   * LOGIKA PAGINATION
+   * Menghitung slice data pesanan yang ditampilkan berdasarkan halaman aktif.
+   * ----------------------------------------------------------------------- */
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentOrders = stats?.recent_orders?.slice(indexOfFirstItem, indexOfLastItem) || [];
   const totalPages = Math.ceil((stats?.recent_orders?.length || 0) / itemsPerPage);
 
+  /* -----------------------------------------------------------------------
+   * LOADING STATE
+   * Menampilkan spinner saat data statistik belum selesai dimuat.
+   * ----------------------------------------------------------------------- */
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -145,7 +214,11 @@ export default function AdminDashboard() {
   return (
     <div className="bg-gray-50 min-h-screen">
 
-      {/* 1. MODAL NOTIFIKASI (Global) */}
+      {/* ===================================================================
+       * SEKSI 1: MODAL NOTIFIKASI GLOBAL
+       * Ditampilkan setelah aksi berhasil atau gagal (hapus / update status).
+       * Menutup otomatis saat backdrop diklik.
+       * =================================================================== */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
@@ -157,7 +230,12 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* 2. MODAL DELETE CUSTOM (Dashboard) */}
+      {/* ===================================================================
+       * SEKSI 2: MODAL KONFIRMASI HAPUS PESANAN
+       * Muncul saat admin menekan tombol hapus pada baris tabel.
+       * Menampilkan ID pesanan yang akan dihapus dan tombol konfirmasi.
+       * Backdrop tidak bisa diklik saat proses penghapusan sedang berjalan.
+       * =================================================================== */}
       {isDeleteModalOpen && orderToDelete && (
         <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => !isDeleting && setIsDeleteModalOpen(false)}></div>
@@ -171,6 +249,7 @@ export default function AdminDashboard() {
             </p>
 
             <div className="space-y-3">
+              {/* Tombol konfirmasi hapus — disabled saat proses berjalan */}
               <button
                 disabled={isDeleting}
                 onClick={confirmDeleteOrder}
@@ -178,6 +257,7 @@ export default function AdminDashboard() {
               >
                 {isDeleting ? "SEDANG MENGHAPUS..." : "YA, HAPUS SEKARANG"}
               </button>
+              {/* Tombol batal */}
               <button
                 disabled={isDeleting}
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -190,35 +270,54 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Tabel Recent Orders */}
+      {/* ===================================================================
+       * SEKSI 3: KONTEN UTAMA DASHBOARD
+       * =================================================================== */}
       <main className="max-w-7xl mx-auto p-6 sm:p-8">
 
-        {/* Header */}
+        {/* -----------------------------------------------------------------
+         * HEADER HALAMAN
+         * Judul dan deskripsi singkat halaman dashboard.
+         * ----------------------------------------------------------------- */}
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-500 mt-1">Ringkasan aktivitas toko Evomi hari ini.</p>
         </header>
 
-        {/* Statistik Cards */}
+        {/* -----------------------------------------------------------------
+         * KARTU STATISTIK
+         * Menampilkan 3 metrik utama: Total Produk, Total Pesanan, Pendapatan.
+         * Kartu Produk dan Pesanan dapat diklik untuk navigasi ke halaman terkait.
+         * ----------------------------------------------------------------- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Kartu: Total Produk */}
           <div onClick={() => router.push('/admin/products')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
             <div className="flex justify-between items-center"><p className="text-gray-500 text-sm font-medium uppercase">Total Produk</p><ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600" /></div>
             <h3 className="text-4xl font-extrabold text-gray-900 mt-2">{stats?.total_products || 0}</h3>
           </div>
+          {/* Kartu: Total Pesanan */}
           <div onClick={() => router.push('/admin/orders')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
             <div className="flex justify-between items-center"><p className="text-gray-500 text-sm font-medium uppercase">Total Pesanan</p><ChevronRight size={16} className="text-gray-300 group-hover:text-indigo-600" /></div>
             <h3 className="text-4xl font-extrabold text-gray-900 mt-2">{stats?.total_orders || 0}</h3>
           </div>
+          {/* Kartu: Total Pendapatan (hanya dari pesanan sukses) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p className="text-gray-500 text-sm font-medium uppercase">Total Pendapatan</p>
             <h3 className="text-4xl font-extrabold text-indigo-600 mt-2">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(stats?.total_revenue_success || 0)}</h3>
           </div>
         </div>
 
-        {/* Tabel Recent Orders */}
+        {/* -----------------------------------------------------------------
+         * TABEL RECENT ORDERS
+         * Menampilkan daftar pesanan terbaru dengan fitur:
+         * - Klik ID pesanan untuk melihat detail
+         * - Dropdown untuk mengubah status pembayaran langsung dari tabel
+         * - Tombol hapus yang membuka modal konfirmasi
+         * - Kontrol pagination di bagian bawah tabel
+         * ----------------------------------------------------------------- */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-          {/* Header */}
+          {/* Header tabel + selector jumlah item per halaman */}
           <div className="p-4 border-b border-gray-50 flex justify-between items-center">
             <h2 className="text-lg font-bold text-gray-800">Recent Orders</h2>
             <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="text-xs border border-gray-200 rounded-lg p-1 outline-none">
@@ -228,11 +327,10 @@ export default function AdminDashboard() {
             </select>
           </div>
 
-          {/* Tabel Pesanan Terbaru */}
+          {/* Wrapper scroll horizontal untuk tabel di layar kecil */}
           <div className="overflow-x-auto">
-
-            {/* Tabel */}
             <table className="w-full text-left">
+              {/* Kepala tabel */}
               <thead className="bg-gray-50/50 text-gray-600 text-xs uppercase font-bold tracking-widest">
                 <tr>
                   <th className="p-4">ID Pesanan</th>
@@ -241,14 +339,17 @@ export default function AdminDashboard() {
                   <th className="p-4 text-center">Aksi</th>
                 </tr>
               </thead>
+              {/* Baris data pesanan */}
               <tbody className="divide-y divide-gray-50">
                 {currentOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-gray-50/80 transition-colors">
+                    {/* Kolom ID — klik untuk ke halaman detail pesanan */}
                     <td className="p-4 font-semibold text-gray-700">
                       <button onClick={() => router.push(`/admin/orders/${order.id}`)} className="hover:text-indigo-600 flex items-center gap-1">
                         #{order.id} <ChevronRight size={14} />
                       </button>
                     </td>
+                    {/* Kolom Status — dropdown untuk update langsung */}
                     <td className="p-4">
                       <select
                         value={order.status_pembayaran || 'pending'}
@@ -263,10 +364,12 @@ export default function AdminDashboard() {
                         <option value="failed">Failed</option>
                       </select>
                     </td>
+                    {/* Kolom Total Harga */}
                     <td className="p-4 font-bold text-gray-900">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(order.total_harga || 0)}</td>
+                    {/* Kolom Aksi — tombol hapus membuka modal konfirmasi */}
                     <td className="p-4 text-center">
                       <button
-                        onClick={() => openDeleteModal(order)} // Memanggil Modal Custom
+                        onClick={() => openDeleteModal(order)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                       >
                         <Trash2 size={18} />
@@ -278,7 +381,11 @@ export default function AdminDashboard() {
             </table>
           </div>
 
-          {/* Navigasi Pagination */}
+          {/* -----------------------------------------------------------------
+           * NAVIGASI PAGINATION
+           * Menampilkan info halaman aktif dan tombol prev/next.
+           * Tombol dinonaktifkan saat sudah di halaman pertama atau terakhir.
+           * ----------------------------------------------------------------- */}
           <div className="p-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/30">
             <span className="text-xs text-gray-500">Halaman {currentPage} dari {totalPages || 1}</span>
             <div className="flex gap-2">
@@ -286,7 +393,7 @@ export default function AdminDashboard() {
               <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30"><ChevronRight size={16} /></button>
             </div>
           </div>
-          
+
         </div>
       </main>
     </div>
